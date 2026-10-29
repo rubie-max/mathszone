@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MathsZone · All of maths, from counting to calculus</title>
+<meta name="description" content="Free maths for every student: a Class 1 to college roadmap, 190+ formulas, a scientific calculator, graph plotter, equation solver and unlimited practice questions.">
+<meta name="theme-color" content="#f7f7fb">
+<meta property="og:title" content="MathsZone · All of maths, from counting to calculus">
+<meta property="og:description" content="A Class 1 to college roadmap, formulas, tools and unlimited practice.">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="logo.svg">
+<script>
+  (function () {
+    var t;
+    try { t = localStorage.getItem("mz-theme"); } catch (e) {}
+    if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.dataset.theme = t;
+    document.querySelector('meta[name="theme-color"]').content = t === "dark" ? "#0e0d16" : "#f7f7fb";
+  })();
+</script>
+<link rel="preload" href="fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<link rel="stylesheet" href="styles.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="engine.js"></script>
+<script defer src="data.js"></script>
+<script defer src="practice.js"></script>
+<script defer src="app.js"></script>
+</head>
+<body>
+<a class="skip" href="#app">Skip to content</a>
+
+<header class="top">
+  <div class="wrap top-inner">
+    <a class="brand" href="#/" aria-label="MathsZone home">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><defs><linearGradient id="mzg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6d4aff"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#mzg)"/><path d="M8.5 11.5h15M12.8 11.5V23M19.4 11.5v8.6c0 1.9.9 2.9 2.7 2.9" stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none"/><circle cx="24.6" cy="7.4" r="1.8" fill="#fde68a"/></svg></span>
+      <span class="brand-text"><strong>MathsZone</strong><small>Counting to calculus</small></span>
+    </a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#/" data-route="home">Home</a>
+      <a href="#/learn" data-route="learn">Learn</a>
+      <a href="#/formulas" data-route="formulas">Formulas</a>
+      <a href="#/tools" data-route="tools">Tools</a>
+      <a href="#/practice" data-route="practice">Practice</a>
+    </nav>
+    <a class="icon-btn" href="#/search" data-route="search" aria-label="Search" title="Search"><span data-icon="search"></span></a>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Switch to dark mode"></button>
+  </div>
+</header>
+
+<main id="app" class="wrap" tabindex="-1">
+  <noscript><p>MathsZone needs JavaScript to run.</p></noscript>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><b>MathsZone</b> · free maths for every student. Formulas are typeset with KaTeX. Your progress, scores and settings are saved only on this device.</p>
+  </div>
+</footer>
+
+<nav class="bottom-nav" aria-label="Sections">
+  <a href="#/" data-route="home"><span data-icon="home"></span>Home</a>
+  <a href="#/learn" data-route="learn"><span data-icon="book"></span>Learn</a>
+  <a href="#/formulas" data-route="formulas"><span data-icon="sigma"></span>Formulas</a>
+  <a href="#/tools" data-route="tools"><span data-icon="tools"></span>Tools</a>
+  <a href="#/practice" data-route="practice"><span data-icon="target"></span>Practice</a>
+</nav>
+</body>
+</html>
