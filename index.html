@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MathsZone · All of maths, from counting to calculus</title>
-<meta name="description" content="Free maths for every student: a Class 1 to college roadmap, 190+ formulas, a scientific calculator, graph plotter, equation solver and unlimited practice questions.">
+<meta name="description" content="Free maths practice for every student, Class 1 to college: daily challenges, speed rounds, chapter and mock tests, 80+ question types, plus formulas and tools.">
 <meta name="theme-color" content="#f7f7fb">
 <meta property="og:title" content="MathsZone · All of maths, from counting to calculus">
 <meta property="og:description" content="A Class 1 to college roadmap, formulas, tools and unlimited practice.">
@@ -21,12 +21,13 @@
 </script>
 <link rel="preload" href="fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=3">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
-<script defer src="engine.js"></script>
-<script defer src="data.js"></script>
-<script defer src="practice.js"></script>
-<script defer src="app.js"></script>
+<script defer src="engine.js?v=3"></script>
+<script defer src="data.js?v=3"></script>
+<script defer src="practice.js?v=3"></script>
+<script defer src="app.js?v=3"></script>
+<script defer src="quiz.js?v=3"></script>
 </head>
 <body>
 <a class="skip" href="#app">Skip to content</a>
@@ -39,11 +40,12 @@
     </a>
     <nav class="tabs" aria-label="Sections">
       <a href="#/" data-route="home">Home</a>
-      <a href="#/learn" data-route="learn">Learn</a>
-      <a href="#/formulas" data-route="formulas">Formulas</a>
-      <a href="#/tools" data-route="tools">Tools</a>
       <a href="#/practice" data-route="practice">Practice</a>
+      <a href="#/learn" data-route="learn">Learn</a>
+      <a href="#/tools" data-route="tools">Tools</a>
+      <a href="#/me" data-route="me">Me</a>
     </nav>
+    <a class="streak-pill" id="streakPill" href="#/me" aria-label="Your streak"><span data-icon="flame"></span><b>0</b></a>
     <a class="icon-btn" href="#/search" data-route="search" aria-label="Search" title="Search"><span data-icon="search"></span></a>
     <button class="icon-btn" id="themeBtn" type="button" aria-label="Switch to dark mode"></button>
   </div>
@@ -61,10 +63,10 @@
 
 <nav class="bottom-nav" aria-label="Sections">
   <a href="#/" data-route="home"><span data-icon="home"></span>Home</a>
-  <a href="#/learn" data-route="learn"><span data-icon="book"></span>Learn</a>
-  <a href="#/formulas" data-route="formulas"><span data-icon="sigma"></span>Formulas</a>
-  <a href="#/tools" data-route="tools"><span data-icon="tools"></span>Tools</a>
   <a href="#/practice" data-route="practice"><span data-icon="target"></span>Practice</a>
+  <a href="#/learn" data-route="learn"><span data-icon="book"></span>Learn</a>
+  <a href="#/tools" data-route="tools"><span data-icon="tools"></span>Tools</a>
+  <a href="#/me" data-route="me"><span data-icon="user"></span>Me</a>
 </nav>
 </body>
 </html>

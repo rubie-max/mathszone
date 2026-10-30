@@ -8,6 +8,7 @@
   const byId = (list) => Object.fromEntries(list.map((x) => [x.id, x]));
   const LV = byId(LEVELS), TP = byId(TOPICS), SK = byId(SKILLS);
   SKILLS.forEach((s) => { s.level = TP[s.topic].level; });
+  TOPICS.forEach((t) => { t.skills = SKILLS.filter((s) => s.topic === t.id).map((s) => s.id); });
   const FORMULAS = TOPICS.flatMap((t) => t.formulas.map((f) => ({ ...f, topic: t })));
   const BRANCHES = [...new Set(TOPICS.map((t) => t.branch))];
   const FEATURED = new Set([
@@ -106,6 +107,27 @@
     integral: '<path d="M16 4.5c-1.6-1.3-4.3-.9-4.6 2l-1.2 11c-.3 2.9-3 3.3-4.6 2"/>',
     cap: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3.5 2.7 8.5 2.7 12 0v-5"/><path d="M22 9v6"/>',
     map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+    flame: '<path d="M12 22c4 0 7-2.7 7-6.8 0-3.3-2.1-5.6-3.6-7.2-.4 1.6-1.2 2.8-2.4 3.4.2-3.3-1-6.6-3.5-9.4C9.4 5.5 5 8.4 5 14.8 5 19.1 8 22 12 22z"/>',
+    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    heart: '<path d="M12 21s-7.5-4.6-9.6-9.3C1 8.4 3.1 4.5 6.9 4.5c2.2 0 3.6 1.2 5.1 3 1.5-1.8 2.9-3 5.1-3 3.8 0 5.9 3.9 4.5 7.2C19.5 16.4 12 21 12 21z"/>',
+    star: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/>',
+    calendar: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    flag: '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
+    grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    play: '<path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.4-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/>',
+    clipboard: '<rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 2h6v4H9zM9 12h6M9 16h4"/>',
+    file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',
+    award: '<circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 8 5-3 5 3-1.5-8"/>',
+    chart: '<path d="M3 3v18h18"/><path d="M7 15v3M12 10v8M17 6v12"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+    backspace: '<path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="m17 9-6 6M11 9l6 6"/>',
+    lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+    list: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+    volume: '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>',
+    phone: '<rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/>',
+    trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
   };
   const icon = (n) => `<span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[n] || ""}</svg></span>`;
 
@@ -130,17 +152,6 @@
 
   const progress = (pct, label) => `<div class="prog" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(label)}"><i style="width:${pct}%"></i></div>`;
 
-  function levelCard(l, i) {
-    const { ts, d, pct } = levelStats(l);
-    return `<a class="level-card" href="#/learn/${l.id}" style="--c:${l.color}">
-      <span class="lv-ic">${icon(l.icon)}</span>
-      <small>Stage ${i + 1} · ${esc(l.range)}</small>
-      <b>${esc(l.name)}</b>
-      ${progress(pct, l.name + " progress")}
-      <span class="muted">${d} of ${ts.length} learned</span>
-    </a>`;
-  }
-
   const toolCard = (t) => `<a class="tool-card" href="#/tools/${t.id}"><span class="tool-ic">${icon(t.icon)}</span><b>${esc(t.name)}</b><span>${esc(t.blurb)}</span></a>`;
 
   function formulaCard(f, withTopic) {
@@ -151,109 +162,47 @@
   const back = (href, label) => `<a class="back" href="${href}">${icon("left")} ${esc(label)}</a>`;
 
   /* ---------- Views ---------- */
-  function homeView() {
-    const last = TP[store.get("last")];
-    const fotd = DAILY[Math.floor(Date.now() / 864e5) % DAILY.length];
-    const picks = ["linear", "quadratic", "percent", "frac-add", "trig", "derivative"].map((id) => SK[id]);
-    app.innerHTML = `
-      <section class="hero">
-        <div class="hero-copy">
-          <span class="eyebrow">${icon("sparkle")} Free · no sign-up · works on any phone</span>
-          <h1>All of maths, from counting to calculus.</h1>
-          <p>${TOPICS.length} topics in five stages, ${FORMULAS.length} formulas, ${TOOLS.length} tools and practice questions that never run out.</p>
-          <div class="hero-acts">
-            <a class="btn light" href="#/learn">Start learning ${icon("arrow")}</a>
-            <a class="btn glass" href="#/tools/calculator">${icon("calc")} Calculator</a>
-          </div>
-        </div>
-        <div class="hero-art" aria-hidden="true">
-          <div class="tile t1">${tex("e^{i\\pi} + 1 = 0")}</div>
-          <div class="tile t2">${tex("a^2 + b^2 = c^2")}</div>
-          <div class="tile t3">${tex("\\int_0^1 x^2\\,dx = \\tfrac13")}</div>
-          <div class="tile t4">${tex("x = \\dfrac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}")}</div>
-        </div>
-      </section>
-      ${last ? `<a class="continue" href="#/topic/${last.id}" style="--c:${LV[last.level].color}">
-        <span class="continue-ic">${icon(LV[last.level].icon)}</span>
-        <span class="continue-txt"><small>Continue where you left off</small><b>${esc(last.title)}</b><span>${esc(LV[last.level].name)} · ${esc(last.branch)}</span></span>
-        ${icon("right")}</a>` : ""}
-      <div class="sec-head"><h2>Your roadmap</h2><a href="#/learn">See all</a></div>
-      <div class="level-row">${LEVELS.map(levelCard).join("")}</div>
-      <div class="sec-head"><h2>Tools</h2><a href="#/tools">All tools</a></div>
-      <div class="tool-grid compact">${TOOLS.map(toolCard).join("")}</div>
-      <div class="duo">
-        <a class="card fotd" href="#/topic/${fotd.topic.id}">
-          <small>${icon("sparkle")} Formula of the day</small>
-          <b>${esc(fotd.name)}</b>
-          <div class="f-tex">${tex(fotd.tex, true)}</div>
-          <span class="muted">From ${esc(fotd.topic.title)}</span>
-        </a>
-        <div class="card practice-cta">
-          <small>${icon("target")} Quick practice</small>
-          <b>Ten questions, new ones every time</b>
-          <div class="chip-links">${picks.map((s) => `<a href="#/practice/${s.id}" style="--c:${LV[s.level].color}">${esc(s.name)}</a>`).join("")}</div>
-          <a class="btn primary" href="#/practice">All practice ${icon("arrow")}</a>
-        </div>
-      </div>`;
-    return "";
+  const myLevel = () => LV[store.get("cls")] || null;
+
+  function stageChips(active, href) {
+    return `<div class="stage-chips" role="tablist" aria-label="Stage">${LEVELS.map((l, k) => `<a href="${href(l)}" role="tab" style="--c:${l.color}" aria-selected="${l === active}">
+      <span class="lv-dot">${icon(l.icon)}</span><span><small>Stage ${k + 1}</small>${esc(l.range)}</span></a>`).join("")}</div>`;
   }
 
-  function learnView() {
-    app.innerHTML = `
-      ${pageHead("map", "Learning roadmap", "Five stages, in order. Open a topic, read the key ideas and the worked example, mark it learned, then practise until it sticks.")}
-      <ol class="road">
-        ${LEVELS.map((l, i) => {
-          const { ts, d, pct } = levelStats(l);
-          return `<li class="road-stage" style="--c:${l.color}">
-            <span class="road-node">${icon(l.icon)}</span>
-            <div class="road-body card">
-              <a class="road-head" href="#/learn/${l.id}">
-                <span><small>Stage ${i + 1} · ${esc(l.range)}</small><b>${esc(l.name)}</b></span>
-                <span class="pill">${d}/${ts.length}</span>
-              </a>
-              <p class="muted">${esc(l.blurb)}</p>
-              ${progress(pct, l.name + " progress")}
-              <ul class="road-topics">
-                ${ts.map((t, k) => `<li><a href="#/topic/${t.id}" class="${done.has(t.id) ? "is-done" : ""}"><span class="tick">${done.has(t.id) ? icon("check") : k + 1}</span>${esc(t.title)}</a></li>`).join("")}
-              </ul>
-            </div>
-          </li>`;
-        }).join("")}
-      </ol>`;
-    return "Learning roadmap";
-  }
+  const learnTabs = (on) => `<div class="seg wide tabs-seg" role="tablist" aria-label="Learn">
+    <a href="#/learn" role="tab" aria-selected="${on === "topics"}">${icon("book")} Topics</a>
+    <a href="#/formulas" role="tab" aria-selected="${on === "formulas"}">${icon("sigma")} Formulas</a></div>`;
 
-  function levelView(l) {
+  function learnView(l) {
+    l = l || myLevel() || LEVELS[0];
     const i = LEVELS.indexOf(l);
     const { ts, d, pct } = levelStats(l);
     app.innerHTML = `
-      ${back("#/learn", "Roadmap")}
-      <section class="level-hero" style="--c:${l.color}">
-        <span class="lv-ic big">${icon(l.icon)}</span>
-        <small>Stage ${i + 1} · ${esc(l.range)}</small>
-        <h1>${esc(l.name)}</h1>
+      <h1 class="page-title">Learn</h1>
+      ${learnTabs("topics")}
+      ${stageChips(l, (x) => `#/learn/${x.id}`)}
+      <section class="stage-card" style="--c:${l.color}">
+        <div class="stage-top">
+          <span class="lv-ic big">${icon(l.icon)}</span>
+          <div><small>Stage ${i + 1} · ${esc(l.range)}</small><h2>${esc(l.name)}</h2></div>
+        </div>
         <p>${esc(l.blurb)}</p>
         ${progress(pct, l.name + " progress")}
-        <span class="muted">${d} of ${ts.length} topics learned</span>
+        <div class="stage-foot"><span class="muted">${d} of ${ts.length} topics learned</span><a class="btn sm" href="#/test?stage=${l.id}">${icon("clipboard")} Test this stage</a></div>
       </section>
       <div class="topic-list">
         ${ts.map((t, k) => `<a class="topic-card" href="#/topic/${t.id}" style="--c:${l.color}">
-          <span class="tnum">${String(k + 1).padStart(2, "0")}</span>
+          <span class="tnum ${done.has(t.id) ? "is-done" : ""}">${done.has(t.id) ? icon("check") : String(k + 1).padStart(2, "0")}</span>
           <span class="tbody">
             <b>${esc(t.title)}</b>
             <span class="tsum">${rich(t.summary)}</span>
-            <span class="tmeta"><span>${esc(t.branch)}</span><span>${t.formulas.length} formula${t.formulas.length === 1 ? "" : "s"}</span>${t.skills.length ? `<span>${icon("target")} Practice</span>` : ""}</span>
+            <span class="tmeta"><span>${esc(t.branch)}</span><span>${t.formulas.length} formula${t.formulas.length === 1 ? "" : "s"}</span>${t.skills.length ? `<span>${icon("target")} ${t.skills.length} quiz${t.skills.length === 1 ? "" : "zes"}</span>` : ""}</span>
           </span>
-          <span class="tstate ${done.has(t.id) ? "is-done" : ""}">${icon(done.has(t.id) ? "check" : "right")}</span>
+          ${icon("right")}
         </a>`).join("")}
-      </div>
-      <nav class="pager">
-        ${i > 0 ? `<a href="#/learn/${LEVELS[i - 1].id}">${icon("left")}<span><small>Previous stage</small>${esc(LEVELS[i - 1].name)}</span></a>` : "<span></span>"}
-        ${i < LEVELS.length - 1 ? `<a class="next" href="#/learn/${LEVELS[i + 1].id}"><span><small>Next stage</small>${esc(LEVELS[i + 1].name)}</span>${icon("right")}</a>` : ""}
-      </nav>`;
+      </div>`;
     return l.name;
   }
-
   function topicView(t) {
     const l = LV[t.level];
     const idx = TOPICS.indexOf(t), prev = TOPICS[idx - 1], next = TOPICS[idx + 1];
@@ -265,11 +214,7 @@
         <div class="chips"><span class="chip lv">${icon(l.icon)} ${esc(l.range)}</span><span class="chip">${esc(t.branch)}</span></div>
         <h1>${esc(t.title)}</h1>
         <p class="lead">${rich(t.summary)}</p>
-        <div class="acts">
-          <button type="button" class="btn" id="doneBtn"></button>
-          ${t.skills.map((s) => `<a class="btn primary" href="#/practice/${s}">${icon("target")} ${t.skills.length > 1 ? esc(SK[s].name) : "Practise"}</a>`).join("")}
-          ${tool ? `<a class="btn" href="#/tools/${tool.id}">${icon(tool.icon)} ${esc(tool.short)}</a>` : ""}
-        </div>
+        ${tool ? `<div class="acts"><a class="btn sm" href="#/tools/${tool.id}">${icon(tool.icon)} Open the ${esc(tool.short.toLowerCase())} tool</a></div>` : ""}
       </header>
       <section>
         <h2>Key ideas</h2>
@@ -287,6 +232,18 @@
           <p class="ex-a"><span class="ex-lab">Answer</span><span>${rich(t.example.ans)}</span></p>
         </div>
       </section>
+      ${t.skills.length ? `<section>
+        <h2>Practise this topic</h2>
+        <div class="row-list">
+          <a class="mode-row" href="#/quiz/${t.id}" style="--c:${l.color}"><span class="mode-ic">${icon("play")}</span><span class="mode-txt"><b>Topic quiz</b><small>10 mixed questions from this topic</small></span>${icon("right")}</a>
+          ${t.skills.map((s) => `<a class="mode-row" href="#/practice/${s}" style="--c:${l.color}"><span class="mode-ic">${icon("target")}</span><span class="mode-txt"><b>${esc(SK[s].name)}</b><small>Practise one skill at a time</small></span>${icon("right")}</a>`).join("")}
+          <a class="mode-row" href="#/test?topic=${t.id}" style="--c:${l.color}"><span class="mode-ic">${icon("clipboard")}</span><span class="mode-txt"><b>Chapter test</b><small>Timed, with a report at the end</small></span>${icon("right")}</a>
+        </div>
+      </section>` : ""}
+      <div class="sticky-acts">
+        <button type="button" class="btn" id="doneBtn"></button>
+        ${t.skills.length ? `<a class="btn primary" href="#/quiz/${t.id}">${icon("play")} Quiz me</a>` : ""}
+      </div>
       <nav class="pager">
         ${prev ? `<a href="#/topic/${prev.id}">${icon("left")}<span><small>Previous</small>${esc(prev.title)}</span></a>` : "<span></span>"}
         ${next ? `<a class="next" href="#/topic/${next.id}"><span><small>Next</small>${esc(next.title)}</span>${icon("right")}</a>` : ""}
@@ -309,7 +266,9 @@
 
   function formulasView() {
     app.innerHTML = `
-      ${pageHead("sigma", "Formula sheet", `All ${FORMULAS.length} formulas on MathsZone, grouped by branch. Tap a topic name to see the ideas and a worked example.`)}
+      <h1 class="page-title">Learn</h1>
+      ${learnTabs("formulas")}
+      <p class="lead small">All ${FORMULAS.length} formulas, grouped by branch. Tap a topic name to see the ideas and a worked example.</p>
       <div class="filter-bar">
         <label class="sr" for="fq">Filter formulas</label>
         <span class="field-ic">${icon("search")}<input id="fq" class="field" type="search" placeholder="Filter, for example: area, sin, derivative" autocomplete="off"></span>
@@ -357,7 +316,7 @@
   }
 
   function toolsView() {
-    app.innerHTML = `${pageHead("tools", "Tools", "Calculators and solvers that show their working. Everything runs on your device.")}<div class="tool-grid">${TOOLS.map(toolCard).join("")}</div>`;
+    app.innerHTML = `<h1 class="page-title">Tools</h1><p class="lead small">Calculators and solvers that show their working. Everything runs on your device.</p><div class="tool-grid">${TOOLS.map(toolCard).join("")}</div>`;
     return "Tools";
   }
 
@@ -365,119 +324,6 @@
     app.innerHTML = `${back("#/tools", "Tools")}${pageHead(t.icon, t.name, esc(t.blurb))}<div id="tool" class="tool"></div>`;
     teardown = t.run(document.getElementById("tool")) || null;
     return t.name;
-  }
-
-  function practiceView() {
-    const best = store.get("best", {});
-    app.innerHTML = `
-      ${pageHead("target", "Practice", "Ten questions a round, freshly generated every time. Your best score for each skill is saved on this device.")}
-      ${LEVELS.map((l) => {
-        const list = SKILLS.filter((s) => s.level === l.id);
-        return `<section class="skill-sec" style="--c:${l.color}">
-          <h2><span class="lv-dot">${icon(l.icon)}</span>${esc(l.name)} <small>${esc(l.range)}</small></h2>
-          <div class="skill-grid">${list.map((s) => `<a class="skill-card" href="#/practice/${s.id}">
-            <b>${esc(s.name)}</b>
-            <span>${esc(TP[s.topic].title)}</span>
-            ${best[s.id] != null ? `<span class="best">${icon("trophy")} Best ${best[s.id]}/10</span>` : `<span class="best new">Not tried yet</span>`}
-          </a>`).join("")}</div>
-        </section>`;
-      }).join("")}`;
-    return "Practice";
-  }
-
-  function sessionView(s) {
-    const N = 10, t = TP[s.topic], l = LV[s.level];
-    let i = 0, score = 0, cur = null, answered = false, seen = new Set();
-    app.innerHTML = `
-      ${back("#/practice", "Practice")}
-      ${pageHead("target", s.name, `${esc(l.name)} · <a href="#/topic/${t.id}">${esc(t.title)}</a>`, l.color)}
-      <div class="quiz card" id="quiz" style="--c:${l.color}"></div>`;
-    const box = document.getElementById("quiz");
-
-    function nextQ() {
-      for (let k = 0; k < 15; k++) {
-        cur = s.gen();
-        if (!seen.has(cur.q)) break;
-      }
-      seen.add(cur.q);
-      answered = false;
-      render();
-    }
-
-    function render() {
-      box.innerHTML = `
-        <div class="quiz-top"><span>Question ${i + 1} of ${N}</span><span class="score">${icon("trophy")} <b id="qScore">${score}</b></span></div>
-        ${progress(Math.round((i / N) * 100), "Round progress")}
-        <div class="q-text">${rich(cur.q)}</div>
-        <form class="q-form" id="qForm" autocomplete="off">
-          <label class="sr" for="qIn">Your answer</label>
-          <input id="qIn" class="field" placeholder="Your answer" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go">
-          <button class="btn primary" id="qGo">Check</button>
-        </form>
-        <p class="q-read" id="qRead">${esc(cur.hint || "")}</p>
-        <div class="q-fb" id="qFb" hidden></div>
-        <div class="q-acts"><button type="button" class="btn ghost sm" id="qSkip">Show answer</button></div>`;
-      const inp = document.getElementById("qIn"), read = document.getElementById("qRead");
-      inp.focus({ preventScroll: true });
-      inp.addEventListener("input", () => {
-        read.classList.remove("err");
-        const v = inp.value.trim();
-        if (/[a-z/^*()√π]/i.test(v)) {
-          try {
-            const parts = v.split(/[,;]/).map((p) => E.fmt(+E.evaluate(p.replace(/^\s*[a-z]\s*=/i, "")).toPrecision(8)));
-            read.textContent = "Reads as " + parts.join(", ");
-          } catch (e) { read.textContent = cur.hint || ""; }
-        } else read.textContent = cur.hint || "";
-      });
-      document.getElementById("qForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        if (answered) return advance();
-        const r = window.MZ_CHECK(inp.value, cur);
-        if (r.empty) { inp.focus(); return; }
-        if (r.error) { read.textContent = r.error; read.classList.add("err"); return; }
-        finish(r.ok, false);
-      });
-      document.getElementById("qSkip").addEventListener("click", () => (answered ? advance() : finish(false, true)));
-    }
-
-    function finish(ok, skipped) {
-      answered = true;
-      if (ok) score++;
-      const fb = document.getElementById("qFb"), go = document.getElementById("qGo");
-      fb.hidden = false;
-      fb.className = "q-fb " + (ok ? "good" : "bad");
-      fb.innerHTML = `<b>${ok ? `${icon("check")} Correct` : skipped ? `${icon("bulb")} Here's the answer` : `${icon("x")} Not quite`}</b>
-        <p>Answer: ${rich(cur.show)}</p><p class="muted">${rich(cur.how)}</p>`;
-      document.getElementById("qIn").readOnly = true;
-      document.getElementById("qSkip").hidden = true;
-      document.getElementById("qScore").textContent = score;
-      go.textContent = i + 1 < N ? "Next question" : "See my score";
-      go.focus({ preventScroll: true });
-    }
-
-    function advance() {
-      i++;
-      if (i >= N) return summary();
-      nextQ();
-    }
-
-    function summary() {
-      const best = store.get("best", {});
-      const prev = best[s.id];
-      if (prev == null || score > prev) { best[s.id] = score; store.set("best", best); }
-      const msg = score === N ? "Perfect round." : score >= 8 ? "Excellent work." : score >= 5 ? "Good going. Another round will lock it in." : "Worth another look at the topic, then try again.";
-      box.innerHTML = `<div class="summary">
-        <span class="big-ic">${icon("trophy")}</span>
-        <h2>${score} out of ${N}</h2>
-        <p>${msg}</p>
-        <p class="muted">${prev != null && score > prev ? `New best! Your previous best was ${prev}/${N}.` : `Best: ${Math.max(prev ?? 0, score)}/${N}`}</p>
-        <div class="acts"><button type="button" class="btn primary" id="again">${icon("refresh")} Practise again</button><a class="btn" href="#/topic/${t.id}">Review the topic</a></div>
-      </div>`;
-      document.getElementById("again").addEventListener("click", () => { i = 0; score = 0; seen = new Set(); nextQ(); });
-    }
-
-    nextQ();
-    return s.name;
   }
 
   function searchView(q) {
@@ -1201,22 +1047,24 @@
 
   function route() {
     if (teardown) { try { teardown(); } catch (e) {} teardown = null; }
+    document.body.classList.remove("playing");
+    document.querySelectorAll(".modal, .confetti").forEach((el) => el.remove());
     const raw = location.hash.replace(/^#\/?/, "");
     const [path, query = ""] = raw.split("?");
     const [a, b] = path.split("/").filter(Boolean).map(decodeURIComponent);
     let section = a || "home", title;
-    if (!a) title = homeView();
-    else if (a === "learn" && b && LV[b]) title = levelView(LV[b]);
+    const q = window.MZQ && window.MZQ.route(a || "", b, new URLSearchParams(query));
+    if (q) { title = q.title; section = q.section; }
+    else if (a === "learn" && b && LV[b]) { title = learnView(LV[b]); }
     else if (a === "learn" && !b) title = learnView();
     else if (a === "topic" && TP[b]) { title = topicView(TP[b]); section = "learn"; }
-    else if (a === "formulas") title = formulasView();
+    else if (a === "formulas") { title = formulasView(); section = "learn"; }
     else if (a === "tools" && b && TL[b]) title = toolView(TL[b]);
     else if (a === "tools" && !b) title = toolsView();
-    else if (a === "practice" && b && SK[b]) title = sessionView(SK[b]);
-    else if (a === "practice" && !b) title = practiceView();
     else if (a === "search") title = searchView(new URLSearchParams(query).get("q") || "");
     else title = notFound();
     document.title = title ? `${title} · MathsZone` : "MathsZone · All of maths, from counting to calculus";
+    document.body.dataset.section = section;
     document.querySelectorAll("[data-route]").forEach((el) => {
       if (el.dataset.route === section) el.setAttribute("aria-current", "page"); else el.removeAttribute("aria-current");
     });
@@ -1239,8 +1087,15 @@
     window.dispatchEvent(new Event("mz-theme"));
   });
 
+  window.MZU = {
+    E, LEVELS, TOPICS, SKILLS, FORMULAS, TOOLS, LV, TP, SK, app, store, done,
+    esc, tex, rich, icon, progress, back, stageChips, myLevel, DAILY,
+    setTeardown(fn) { teardown = fn; },
+    go(h) { if (location.hash === h || (!location.hash && h === "#/")) route(); else location.hash = h; },
+  };
+
   document.querySelectorAll("[data-icon]").forEach((el) => { el.innerHTML = icon(el.dataset.icon); });
   paintTheme();
   window.addEventListener("hashchange", route);
-  route();
+  document.addEventListener("DOMContentLoaded", route);
 })();
