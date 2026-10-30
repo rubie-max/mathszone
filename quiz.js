@@ -226,6 +226,7 @@
   const closeP = (s) => { const o = (s.match(/\(/g) || []).length - (s.match(/\)/g) || []).length; return o > 0 ? s + ")".repeat(o) : s; };
 
   /* ---------- Player ---------- */
+  const optTex = (c) => rich(String(c).replace(/\$([^$]+)\$/g, (m, t) => `$\\displaystyle ${t}$`));
   const PRAISE = ["Correct!", "Nice work!", "Spot on!", "Great job!", "You got it!", "Brilliant!", "Exactly right!"];
   const KEYS = ["7", "8", "9", "/", "del", "4", "5", "6", "√", "(", "1", "2", "3", "π", ")", "-", "0", ".", ",", "go"];
   const keyLabel = { del: icon("backspace"), go: "Check", "-": "−", "/": "÷" };
@@ -278,7 +279,7 @@
         <div class="q-text">${rich(it.q)}</div>
         ${typing
           ? `<div class="ans-box" id="ansBox"><span id="ansTxt" aria-live="polite"></span><i class="caret" aria-hidden="true"></i></div><p class="q-read" id="qRead">${esc(it.hint || "Use the keypad to type your answer.")}</p>`
-          : `<div class="opts" id="opts">${it.choices.map((c, k) => `<button type="button" class="opt" data-k="${k}"><span class="opt-k">${"ABCD"[k]}</span><span class="opt-t">${rich(c)}</span></button>`).join("")}</div>`}
+          : `<div class="opts" id="opts">${it.choices.map((c, k) => `<button type="button" class="opt" data-k="${k}"><span class="opt-k">${"ABCD"[k]}</span><span class="opt-t">${optTex(c)}</span></button>`).join("")}</div>`}
       </div>`;
       foot.innerHTML = typing ? keypad() : cfg.instant ? "" : `<button type="button" class="btn ghost sm" id="pSkip">${icon("bulb")} I don't know</button>`;
       foot.classList.toggle("has-pad", typing);
@@ -472,7 +473,7 @@
       main.innerHTML = `<div class="q-wrap">
         <div class="q-tag" style="--c:${lv.color}">${icon(lv.icon)}<span>${esc(TP[s.topic].title)}</span>${flag[cur] ? `<em class="flagged">${icon("flag")} Flagged</em>` : ""}</div>
         <div class="q-text">${rich(it.q)}</div>
-        <div class="opts">${it.choices.map((c, k) => `<button type="button" class="opt ${sel[cur] === k ? "sel" : ""}" data-k="${k}" aria-pressed="${sel[cur] === k}"><span class="opt-k">${"ABCD"[k]}</span><span class="opt-t">${rich(c)}</span></button>`).join("")}</div>
+        <div class="opts">${it.choices.map((c, k) => `<button type="button" class="opt ${sel[cur] === k ? "sel" : ""}" data-k="${k}" aria-pressed="${sel[cur] === k}"><span class="opt-k">${"ABCD"[k]}</span><span class="opt-t">${optTex(c)}</span></button>`).join("")}</div>
         ${sel[cur] >= 0 ? `<button type="button" class="link-btn clear-ans" id="eClear">Clear my answer</button>` : ""}
       </div>`;
       main.querySelector(".opts").addEventListener("click", (e) => { const b = e.target.closest(".opt"); if (b) choose(+b.dataset.k); });
