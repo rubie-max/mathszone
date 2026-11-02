@@ -1202,12 +1202,84 @@
     return "Me";
   }
 
+  function gallery() {
+    const card = (s, lv) => {
+      const it = make(s);
+      const v = window.MZV ? window.MZV.html(it) : "";
+      if (!v) return "";
+      return `<article class="gal-card" data-skill="${s.id}">
+        <div class="gal-card-h"><span class="q-tag sm" style="--c:${lv.color}">${icon(lv.icon)}<span>${esc(s.name)}</span></span>
+          <button type="button" class="link-btn gal-regen" data-regen="${s.id}">${icon("refresh")} New example</button></div>
+        <div class="gal-q">${rich(it.q)}</div>
+        <div class="gal-v">${v}</div>
+      </article>`;
+    };
+    const tIndex = {};
+    TOPICS.forEach((t, i) => (tIndex[t.id] = i));
+    const section = (lv) => {
+      const skills = SKILLS.filter((s) => TP[s.topic] && TP[s.topic].level === lv.id)
+        .sort((a, b) => (tIndex[a.topic] ?? 99) - (tIndex[b.topic] ?? 99));
+      const cards = skills.map((s) => card(s, lv)).filter(Boolean).join("");
+      if (!cards) return "";
+      return `<section class="gal-stage" id="gal-${lv.id}" style="--c:${lv.color}">
+        <h2 class="gal-stage-h"><span class="lv-ic">${icon(lv.icon)}</span><span>${esc(lv.name)}<small>${esc(lv.range)}</small></span></h2>
+        <div class="gal-grid">${cards}</div>
+      </section>`;
+    };
+    app.innerHTML = `
+      ${back("#/learn", "Learn")}
+      <h1 class="page-title">Visual solutions</h1>
+      <p class="lead small">Every skill worked out step by step, the pen-and-paper way. Scroll and each one plays itself, or tap play on any card.</p>
+      <nav class="gal-chips" aria-label="Jump to a stage">${LEVELS.map((lv) => `<button type="button" data-jump="gal-${lv.id}">${esc(lv.name)}</button>`).join("")}</nav>
+      ${LEVELS.map(section).join("")}`;
+
+    if (window.MZV) window.MZV.mount(app, false);
+
+    const onClick = (e) => {
+      const jump = e.target.closest("[data-jump]");
+      if (jump) { const el = document.getElementById(jump.dataset.jump); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+      const regen = e.target.closest("[data-regen]");
+      if (regen) {
+        const cardEl = regen.closest(".gal-card"), s = SK[regen.dataset.regen];
+        if (!cardEl || !s) return;
+        const it = make(s);
+        const v = window.MZV ? window.MZV.html(it) : "";
+        if (!v) return;
+        cardEl.querySelector(".gal-q").innerHTML = rich(it.q);
+        const vWrap = cardEl.querySelector(".gal-v");
+        vWrap.innerHTML = v;
+        if (window.MZV) window.MZV.bind(vWrap.querySelector(".vz"), false);
+      }
+    };
+    app.addEventListener("click", onClick);
+
+    // Play each card once as it scrolls into view, so the page feels like a reel of short clips.
+    let io = null;
+    if ("IntersectionObserver" in window) {
+      io = new IntersectionObserver((ents) => {
+        for (const en of ents) {
+          if (!en.isIntersecting) continue;
+          const vz = en.target.querySelector(".vz");
+          const play = vz && vz.querySelector(".vz-play");
+          const cnt = vz && vz.querySelector(".vz-n");
+          if (play && cnt && /^1 \//.test(cnt.textContent)) play.click();
+          io.unobserve(en.target);
+        }
+      }, { threshold: 0.55 });
+      app.querySelectorAll(".gal-card").forEach((c) => io.observe(c));
+    }
+
+    U.setTeardown(() => { app.removeEventListener("click", onClick); if (io) io.disconnect(); });
+    return "Visual solutions";
+  }
+
   function route(a, b, qs) {
     const R = (title, section = "practice") => ({ title, section });
     switch (a) {
       case "": return R(home(), "home");
       case "practice": return b ? (SK[b] ? R(skillSetup(SK[b])) : null) : R(hub());
       case "topics": return R(topicsView(LV[b]));
+      case "gallery": return R(gallery(), "learn");
       case "quiz": return TP[b] && TP[b].skills.length ? R(topicQuiz(TP[b]), "learn") : null;
       case "quick": return R(quick(), "home");
       case "daily": return R(daily());

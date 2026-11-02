@@ -197,7 +197,7 @@
         </div>
         <p>${esc(l.blurb)}</p>
         ${progress(pct, l.name + " progress")}
-        <div class="stage-foot"><span class="muted">${d} of ${ts.length} topics learned</span><a class="btn sm" href="#/test?stage=${l.id}">${icon("clipboard")} Test this stage</a></div>
+        <div class="stage-foot"><a class="btn sm" href="#/gallery">${icon("play")} Visual solutions</a><a class="btn sm" href="#/test?stage=${l.id}">${icon("clipboard")} Test this stage</a></div>
       </section>
       <div class="topic-list">
         ${ts.map((t, k) => `<a class="topic-card" href="#/topic/${t.id}" style="--c:${l.color}">

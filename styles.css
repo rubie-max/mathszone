@@ -1411,3 +1411,27 @@ body.wb-open { overflow: hidden; }
   .wb-grp.wb-sizes { display: none; }
   .wb-q-body { font-size: 15px; }
 }
+
+/* ===== Visual-solutions gallery ===== */
+.gal-chips { position: sticky; top: 8px; z-index: 5; display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 18px; padding: 6px; border-radius: 14px; background: color-mix(in srgb, var(--surface) 86%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--line); }
+.gal-chips button { padding: 6px 12px; border: 0; border-radius: 99px; font: inherit; font-size: 13px; font-weight: 700; color: var(--ink); background: var(--surface-2); cursor: pointer; }
+.gal-chips button:hover { background: var(--accent-soft); color: var(--accent); }
+.gal-stage { margin: 0 0 30px; scroll-margin-top: 70px; }
+.gal-stage-h { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-size: 19px; }
+.gal-stage-h .lv-ic { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); }
+.gal-stage-h .lv-ic .ic { width: 18px; height: 18px; }
+.gal-stage-h small { display: block; font-size: 12px; font-weight: 600; color: var(--muted); }
+.gal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; align-items: start; }
+.gal-card { display: flex; flex-direction: column; padding: 12px 12px 8px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.gal-card-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.gal-card-h .q-tag.sm { padding: 4px 9px; font-size: 12px; }
+.gal-regen { flex: none; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.gal-regen .ic { width: 13px; height: 13px; }
+.gal-regen:hover { color: var(--accent); }
+.gal-q { margin: 0 2px 6px; font-size: 15px; font-weight: 650; line-height: 1.45; }
+.gal-v { margin-top: auto; }
+.gal-v .vz { margin: 0; }
+@media (max-width: 560px) {
+  .gal-grid { grid-template-columns: 1fr; }
+  .gal-stage-h { font-size: 17px; }
+}
