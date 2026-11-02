@@ -238,11 +238,23 @@
     const k2 = S.step(`The missing part is the rest of the whole: $${whole} - ${part}$.`);
     const k3 = S.step(`$${whole} - ${part} = ${ans}$, so the missing number is ${ans}.`);
     const h = `<div class="pw">
-      <div class="pw-bar whole"${A(k0)}>${whole}</div>
-      <div class="pw-row">
-        <div class="pw-bar miss"${A(k2, { st: `flex:${ans}` })}><span class="vst"><span${A(k2, { x: k3 })}>?</span><span${A(k3)}>${ans}</span></span></div>
-        <div class="pw-bar part"${A(k1, { st: `flex:${part}` })}>${part}</div>
-      </div></div>`;
+      <div class="pw-whole"${A(k0)}>
+        <span class="pw-cap">whole</span>
+        <span class="pw-val">${whole}</span>
+      </div>
+      <div class="pw-brace" aria-hidden="true"></div>
+      <div class="pw-parts">
+        <div class="pw-seg miss"${A(k2, { st: `flex:${ans}` })}>
+          <span class="pw-cap">missing</span>
+          <span class="pw-val vst"><span${A(k2, { x: k3 })}>?</span><span${A(k3)}>${ans}</span></span>
+        </div>
+        <div class="pw-seg part"${A(k1, { st: `flex:${part}` })}>
+          <span class="pw-cap">${take ? "left" : "part"}</span>
+          <span class="pw-val">${part}</span>
+        </div>
+      </div>
+      <div class="pw-eq"${A(k2, { h: k3 })}>${tx(`${whole} - ${part} = `)}<span class="vst"><span${A(k2, { x: k3 })}>?</span><span class="pw-ans"${A(k3)}>${ans}</span></span></div>
+    </div>`;
     return R(S, h);
   };
 
