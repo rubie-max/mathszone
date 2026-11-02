@@ -1484,6 +1484,12 @@ a.term:hover { color: var(--accent); }
   .tabs-seg a .ic { display: none; }
 }
 
+/* Question figures: the first frame of an animation, shown with the question */
+.vz.vz-fig { margin: 10px 0 4px; pointer-events: none; }
+.vz-fig .vz-stage { padding: 8px; }
+.vz-fig .vz-stage [data-s="0"] { opacity: 1; transform: none; }
+.rv-q .vz-fig { max-width: 360px; }
+
 /* NCERT extras in animations */
 .picto { width: min(100%, 440px); }
 .pic { display: inline-flex; flex-wrap: wrap; gap: 2px; font-size: 20px; line-height: 1; }

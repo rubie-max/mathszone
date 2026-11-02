@@ -2,7 +2,7 @@
    Network-first for same-origin requests so the live site always wins when online
    (no stale manifest/icons/JS during active development); cache is only a fallback
    for offline. The manifest and the SW itself are never served from cache. */
-const VERSION = "mz-2026-11-02f";
+const VERSION = "mz-2026-11-02g";
 const SHELL = "mz-shell-" + VERSION;
 
 const SHELL_URLS = ["./", "./index.html"];

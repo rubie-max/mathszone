@@ -1812,7 +1812,7 @@
       cap1 = "The gap between them is the same everywhere, so they never meet.";
       name = "parallel lines, written $l \\parallel m$";
     } else if (kind === "perpendicular") {
-      g = both(x0, 100, x1, 100, 0) + both(160, 18, 160, 132, 0) + rightMark(160, 100, 1, 0, 0, -1, 14, 1) + T(178, 84, "90°", 1, "k3 b", { a: "start" });
+      g = both(x0, 100, x1, 100, 0) + both(160, 18, 160, 132, 0) + rightMark(160, 100, 1, 0, 0, -1, 14, 0) + T(178, 84, "90°", 1, "k3 b", { a: "start" });
       cap1 = "They cross and make a right angle, 90°.";
       name = "perpendicular lines, written $l \\perp m$";
     } else {
@@ -1971,6 +1971,315 @@
     [`\\theta = ${hc(2, ans)}\\ (= ${deg}^\\circ)`, `The only such angle is $${ans}$.`],
   ]);
 
+  /* ================= NCERT extras, part 2 ================= */
+  B.steps = ({ lines, intro }) => chainOf(lines, intro);
+
+  const hm = (H, Mi) => `${H}:${String(Mi).padStart(2, "0")}`;
+  B.clock = ({ h, m, dh, dm }) => {
+    const S = Scene(), cx = 104, cy = 100;
+    const hands = (H, Mi, k, o) => {
+      const ta = (((H % 12) + Mi / 60) * Math.PI) / 6, tm = (Mi * Math.PI) / 30;
+      return G(Ln(cx, cy, cx + 40 * Math.sin(ta), cy - 40 * Math.cos(ta), null, "k1 thick5") + Ln(cx, cy, cx + 60 * Math.sin(tm), cy - 60 * Math.cos(tm), null, "k2 thick"), k, o);
+    };
+    let g = Ci(cx, cy, 84, null, "f0 ln thick");
+    for (let i = 0; i < 60; i++) { const t = (i * Math.PI) / 30, r0 = i % 5 ? 79 : 74; g += Ln(cx + r0 * Math.sin(t), cy - r0 * Math.cos(t), cx + 84 * Math.sin(t), cy - 84 * Math.cos(t), null, "ln thin"); }
+    for (let i = 1; i <= 12; i++) { const t = (i * Math.PI) / 6; g += T(cx + 64 * Math.sin(t), cy - 64 * Math.cos(t), i, null, "b"); }
+    if (dh == null) {
+      const k0 = S.step(m < 30 ? `The short hand shows the hour: it is ${m ? "just past" : "on"} ${h}.` : `The short hand is between ${h} and ${(h % 12) + 1}, so the hour is still ${h}.`);
+      const k1 = S.step(m ? `The long hand shows the minutes. It points at ${m / 5}; count in fives: $${m / 5} \\times 5 = ${m}$ minutes.` : `The long hand points at 12: that means 0 minutes, ${h} o'clock.`);
+      S.step(`So the time is ${hm(h, m)}.`);
+      g += hands(h, m, k0) + Ci(cx, cy, 4, null, "dot k0") + T(262, 100, hm(h, m), k1 + 1, "k1 big");
+      return R(S, svg(320, 200, g));
+    }
+    const tot = h * 60 + m + dh * 60 + dm, mid = h * 60 + m + dh * 60;
+    const wrap = (t) => [((Math.floor(t / 60) - 1) % 12) + 1, t % 60];
+    const [h1, m1] = wrap(mid), [h2, m2] = wrap(tot);
+    const k0 = S.step(`Start time: ${hm(h, m)}.`);
+    const k1 = S.step(`Add ${dh} hour${dh === 1 ? "" : "s"}: the short hand moves on ${dh} number${dh === 1 ? "" : "s"}, giving ${hm(h1, m1)}.`);
+    const k2 = S.step(`Add ${dm} minutes${m + dm >= 60 ? `: ${m} + ${dm} = ${m + dm}, which is 1 hour and ${m + dm - 60} minutes` : ""}. Now it is ${hm(h2, m2)}.`);
+    S.step(`So it ends at ${hm(h2, m2)}.`);
+    g += hands(h, m, k0, { x: k1 }) + hands(h1, m1, k1, { x: k2 }) + hands(h2, m2, k2) + Ci(cx, cy, 4, null, "dot k0");
+    g += T(262, 50, hm(h, m), k0, "b") + T(262, 80, `+ ${dh} h ${dm} min`, k1, "k3 b") + T(262, 120, hm(h2, m2), k2, "k1 big");
+    return R(S, svg(320, 200, g));
+  };
+
+  const rs = (v) => `₹${(+v).toFixed(Number.isInteger(+v) ? 0 : 2)}`;
+  B.money = ({ items, paid }) => {
+    const S = Scene(), tot = Math.round(items.reduce((s, it) => s + it[1], 0) * 100) / 100;
+    const k0 = S.step(`List what is bought and its price.`);
+    const k1 = S.step(`Add the prices, rupees with rupees and paise with paise: total ${rs(tot)}.`);
+    let h = items.map(([n, p], i) => cel(n, k0, "", { d: i }) + cel(rs(p), k0, "b", { d: i })).join("");
+    h += cel("Total", k1, "vh") + cel(rs(tot), k1, "big k1");
+    if (paid != null) {
+      const k2 = S.step(`Paid ${rs(paid)}. Change = ${rs(paid)} − ${rs(tot)} = ${rs(Math.round((paid - tot) * 100) / 100)}.`);
+      h += cel("Paid", k2, "vh") + cel(rs(paid), k2, "b") + cel("Change", k2, "vh") + cel(rs(Math.round((paid - tot) * 100) / 100), k2, "big k2");
+    }
+    return R(S, grid("1.4fr 1fr", h, "tbl"));
+  };
+
+  const DIRS = ["North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West"];
+  B.compass = ({ start, turns }) => {
+    const S = Scene(), cx = 120, cy = 100;
+    const arrow = (idx, k, o) => { const t = (idx * Math.PI) / 4; return Ar(cx, cy, cx + 62 * Math.sin(t), cy - 62 * Math.cos(t), k, "k1 thick5", o); };
+    let g = Ci(cx, cy, 80, null, "f0 ln");
+    ["N", "NE", "E", "SE", "S", "SW", "W", "NW"].forEach((s, i) => { const t = (i * Math.PI) / 4; g += Ln(cx + 70 * Math.sin(t), cy - 70 * Math.cos(t), cx + 80 * Math.sin(t), cy - 80 * Math.cos(t), null, "ln") + T(cx + 92 * Math.sin(t), cy - 92 * Math.cos(t), s, null, i % 2 ? "tk" : "b"); });
+    let idx = start;
+    const k0 = S.step(`You start facing ${DIRS[idx]}.`);
+    const ks = [k0];
+    turns.forEach(([side, deg]) => {
+      idx = (idx + (side === "right" ? 1 : -1) * (deg / 45) + 8) % 8;
+      ks.push(S.step(`Turn ${side} through ${deg}° (${side === "right" ? "clockwise" : "anticlockwise"}${deg === 90 ? ", a quarter turn" : deg === 180 ? ", a half turn" : ""}): now you face ${DIRS[idx]}.`));
+    });
+    S.step(`So you end up facing ${DIRS[idx]}.`);
+    let j = start;
+    g += arrow(j, ks[0], { x: ks[1] });
+    turns.forEach(([side, deg], i) => { j = (j + (side === "right" ? 1 : -1) * (deg / 45) + 8) % 8; g += arrow(j, ks[i + 1], { x: i + 2 < ks.length ? ks[i + 2] : null }); });
+    g += Ci(cx, cy, 4, null, "dot k0") + T(268, 100, DIRS[idx], ks[ks.length - 1] + 1, "k1 b");
+    return R(S, svg(320, 200, g));
+  };
+
+  B.tally = ({ n }) => {
+    const S = Scene(), g5 = Math.floor(n / 5), r = n % 5;
+    const k0 = S.step(`Tally marks come in bundles: four lines with a fifth across them make 5.`);
+    const k1 = S.step(`There ${g5 === 1 ? "is 1 bundle" : `are ${g5} bundles`}: $${g5} \\times 5 = ${g5 * 5}$.`);
+    const k2 = S.step(r ? `Plus ${r} single line${r === 1 ? "" : "s"}: $${g5 * 5} + ${r} = ${n}$.` : `No single lines are left over, so the total is ${n}.`);
+    let g = "", x = 14;
+    for (let b = 0; b < g5; b++) {
+      for (let i = 0; i < 4; i++) g += Ln(x + i * 9, 30, x + i * 9, 80, k0, "k0 thick", { d: b });
+      g += Ln(x - 5, 72, x + 32, 38, k0, "k2 thick", { d: b, h: k1 });
+      x += 48;
+    }
+    for (let i = 0; i < r; i++) g += Ln(x + i * 9, 30, x + i * 9, 80, k0, "k3 thick", { h: k2 });
+    const W = Math.max(200, x + r * 9 + 14);
+    return R(S, svg(W, 110, g) + eq(`total: <b>${n}</b>`, k2, "k1"));
+  };
+
+  B.bars = ({ labels, vals, step, i, j, ask }) => {
+    const S = Scene(), top = Math.ceil(Math.max(...vals) / step) * step, base = 160, H = 130, sc = H / top, bw = 40;
+    const gap = (260 - labels.length * bw) / (labels.length + 1);
+    const k0 = S.step(`Read the scale first: each grid line is ${step}.`);
+    const ki = S.step(`The bar for ${labels[i]} reaches ${vals[i]}.`);
+    let kj = null;
+    if (j != null) {
+      kj = S.step(`The bar for ${labels[j]} reaches ${vals[j]}.`);
+      S.step(ask === "total" ? `Together: $${vals[i]} + ${vals[j]} = ${vals[i] + vals[j]}$.` : `Difference: $${vals[i]} - ${vals[j]} = ${vals[i] - vals[j]}$.`);
+    }
+    let g = "";
+    for (let v = 0; v <= top; v += step) g += Ln(40, base - v * sc, 304, base - v * sc, k0, "gd") + T(34, base - v * sc, v, k0, "tk", { a: "end" });
+    g += Ln(40, base, 304, base, null, "ax") + Ln(40, base, 40, base - H - 6, null, "ax");
+    labels.forEach((l, n) => {
+      const x = 40 + gap + n * (bw + gap), on = n === i ? ki : n === j ? kj : null;
+      g += Rc(x, base - vals[n] * sc, bw, vals[n] * sc, k0, `f${(n % 4) + 1} ln`, { h: on, d: n });
+      g += T(x + bw / 2, base + 13, l, null, "tk");
+      if (on != null) g += Ln(40, base - vals[n] * sc, x, base - vals[n] * sc, on, "k4 dash") + T(x + bw / 2, base - vals[n] * sc - 9, vals[n], on, "k1 b");
+    });
+    return R(S, svg(320, 182, g));
+  };
+
+  B.bases = ({ ds, base }) => {
+    const S = Scene(), L = ds.length, pw = ds.split("").map((_, i) => base ** (L - 1 - i)), parts = ds.split("").map((d, i) => +d * pw[i]);
+    const val = parts.reduce((s, v) => s + v, 0);
+    const k0 = S.step(`In base ${base} each place is worth ${base} times the place on its right: ${pw.slice().reverse().join(", ")}, …`);
+    const k1 = S.step(`Multiply each digit by its place value.`);
+    S.step(`Add them up: $${parts.join(" + ")} = ${val}$.`);
+    let h = pw.map((p, i) => cel(p, k0, "vh", { d: i })).join("") + ds.split("").map((d, i) => cel(d, k0, "big", { d: i })).join("") + parts.map((p, i) => cel(p, k1, "k1 b", { d: i })).join("");
+    return R(S, grid(`repeat(${L}, minmax(42px, auto))`, h, "pv") + eq(`${ds}<sub>${base}</sub> = <b>${val}</b>`, k1 + 1, "k1"));
+  };
+
+  B.transv = ({ a, pos, pos2, at2, rel, x }) => {
+    const S = Scene(), phi = pos === "UR" || pos === "LL" ? a : 180 - a, t = (phi * Math.PI) / 180;
+    const off = 40 / Math.tan(t), P1 = [160 + off, 60], P2 = [160 - off, 140];
+    const bounds = (p) => { const r = [0, t, Math.PI, Math.PI + t, 2 * Math.PI]; return { UR: [r[0], r[1]], UL: [r[1], r[2]], LL: [r[2], r[3]], LR: [r[3], r[4]] }[p]; };
+    const why = {
+      corr: "They are corresponding angles: the same position at each crossing. With parallel lines they are equal.",
+      alt: "They are alternate interior angles: between the lines, on opposite sides of the transversal. With parallel lines they are equal.",
+      coint: "They are co-interior angles: between the lines, on the same side. With parallel lines they add to 180°.",
+      vert: "They are vertically opposite angles, so they are equal.",
+      lin: "They lie on a straight line (a linear pair), so they add to 180°.",
+    }[rel];
+    const k0 = S.step(`Lines l and m are parallel. A transversal crosses both. One angle is ${a}°.`);
+    const k1 = S.step(why);
+    S.step(rel === "coint" || rel === "lin" ? `$x = 180^\\circ - ${a}^\\circ = ${x}^\\circ$.` : `So $x = ${x}^\\circ$.`);
+    const dx = Math.cos(t) * 70, dy = Math.sin(t) * 70;
+    let g = Ln(20, 60, 300, 60, k0, "k0 thick") + Ln(20, 140, 300, 140, k0, "k0 thick") + T(308, 60, "l", k0, "i b", { a: "start" }) + T(308, 140, "m", k0, "i b", { a: "start" });
+    g += G(head(250, 60, 0, "k0") + head(258, 60, 0, "k0") + head(250, 140, 0, "k0") + head(258, 140, 0, "k0"), k0);
+    g += Ln(P2[0] - dx, P2[1] + dy, P1[0] + dx, P1[1] - dy, k0, "k3 thick");
+    const mark = (at, p, k, cls, lab) => {
+      const [t0, t1] = bounds(p), mid = (t0 + t1) / 2;
+      return P(sector(at[0], at[1], 20, t0, t1), k, cls) + T(at[0] + 34 * Math.cos(mid), at[1] - 34 * Math.sin(mid), lab, k, "b");
+    };
+    const Q = at2 ? P2 : P1;
+    g += mark(P1, pos, k0, "f1 ln thin", `${a}°`);
+    g += G(mark(Q, pos2, null, "f2 ln thin", "x"), k0, { x: k1 + 1 }) + mark(Q, pos2, k1 + 1, "f2 ln thin", `${x}°`);
+    return R(S, svg(330, 200, g) + eq(`x = <b>${x}°</b>`, k1 + 1, "k1"));
+  };
+
+  B.rotsym = ({ n, name, sides }) => {
+    const S = Scene(), cx = 120, cy = 100, R0 = 70;
+    let pts;
+    if (name.startsWith("rectangle")) pts = [[cx - 80, cy - 45], [cx + 80, cy - 45], [cx + 80, cy + 45], [cx - 80, cy + 45]];
+    else if (name.startsWith("parallelogram")) pts = [[cx - 60, cy - 45], [cx + 90, cy - 45], [cx + 60, cy + 45], [cx - 90, cy + 45]];
+    else pts = Array.from({ length: sides }, (_, i) => { const a = -Math.PI / 2 + (2 * Math.PI * i) / sides; return [cx + R0 * Math.cos(a), cy + R0 * Math.sin(a)]; });
+    const k0 = S.step(`Mark one corner of the ${name} and its centre.`);
+    const k1 = S.step(`Turn it about the centre. It fits onto itself after every $\\frac{360^\\circ}{${n}} = ${360 / n}^\\circ$ turn.`);
+    S.step(`In one full turn it matches its starting position ${n} times, so the order of rotational symmetry is ${n}.`);
+    let g = Poly(pts, k0, "f1 ln thick") + Ci(cx, cy, 4, k0, "dot k0") + Ci(pts[0][0], pts[0][1], 7, k0, "dot k1");
+    for (let i = 1; i < n; i++) {
+      const a = (2 * Math.PI * i) / n, dx = pts[0][0] - cx, dy = pts[0][1] - cy;
+      const px = cx + dx * Math.cos(a) - dy * Math.sin(a), py = cy + dx * Math.sin(a) + dy * Math.cos(a);
+      g += Ci(px, py, 7, k1, "hole", { d: i * 3 }) + T(px + (px - cx) * 0.22, py + (py - cy) * 0.22, `${(360 / n) * i}°`, k1, "tk", { d: i * 3 });
+    }
+    return R(S, svg(320, 200, g) + eq(`order <b>${n}</b>`, k1 + 1, "k1"));
+  };
+
+  B.bisect = ({ a }) => {
+    const S = Scene(), O = [40, 170], t = (a * Math.PI) / 180, L = 220, r = 90;
+    const p = (ang, d) => [O[0] + d * Math.cos(ang), O[1] - d * Math.sin(ang)];
+    const A1 = p(0, r), A2 = p(t, r), half = t / 2, X = p(half, r * 1.55);
+    const k0 = S.step(`Draw the ${a}° angle.`);
+    const k1 = S.step(`Put the compass point on the vertex and draw an arc that cuts both arms.`);
+    const k2 = S.step(`From each cut, draw arcs of the same radius so they cross inside the angle.`);
+    S.step(`Join the vertex to the crossing: it bisects the angle into two equal parts, $\\frac{${a}^\\circ}{2} = ${a / 2}^\\circ$.`);
+    let g = Ln(O[0], O[1], ...p(0, L), k0, "k0 thick") + Ln(O[0], O[1], ...p(t, L), k0, "k0 thick");
+    g += P(arcPath(O[0], O[1], r, -0.08, t + 0.08), k1, "k3", { draw: true }) + Ci(A1[0], A1[1], 4, k1, "dot k3") + Ci(A2[0], A2[1], 4, k1, "dot k3");
+    const rr = Math.hypot(X[0] - A1[0], X[1] - A1[1]), aa = Math.atan2(-(X[1] - A1[1]), X[0] - A1[0]), ab = Math.atan2(-(X[1] - A2[1]), X[0] - A2[0]);
+    g += P(arcPath(A1[0], A1[1], rr, aa - 0.25, aa + 0.25), k2, "k4", { draw: true }) + P(arcPath(A2[0], A2[1], rr, ab - 0.25, ab + 0.25), k2, "k4", { draw: true });
+    g += Ln(O[0], O[1], ...p(half, L), k2 + 1, "k1 thick", { draw: true });
+    g += T(...p(half / 2, 50), `${a / 2}°`, k2 + 1, "k1 b") + T(...p(half * 1.5, 50), `${a / 2}°`, k2 + 1, "k1 b") + T(O[0] + 10, O[1] + 14, `${a}°`, k0, "b", { a: "start", x: k2 + 1 });
+    return R(S, svg(320, 190, g));
+  };
+
+  B.logic = ({ p, q, cq, cp, truth, why }) => {
+    const S = Scene();
+    const k0 = S.step(`The statement has two parts: "if" part P and "then" part Q.`);
+    const k1 = S.step(`The converse swaps them: if Q, then P.`);
+    S.step(`Is the converse true? ${why}`);
+    const st = (a, b, ca, cb, k) => eq(`If <span class="${ca} b">${a}</span>, then <span class="${cb} b">${b}</span>.`, k, "sm");
+    return R(S, st(p, q, "k1", "k2", k0) + `<div class="lt"${A(k1)}><i>⇅ swap</i></div>` + st(cq || q, cp || p, "k2", "k1", k1) + eq(`converse is <b>${truth ? "true" : "false"}</b>`, k1 + 1, "k1"));
+  };
+
+  B.collatz = ({ seq }) => {
+    const S = Scene();
+    const k0 = S.step(`Rule: if the number is even, halve it; if it is odd, multiply by 3 and add 1. Stop at 1.`);
+    const k1 = S.step(`Start with ${seq[0]} and keep applying the rule.`);
+    S.step(`It reaches 1 after ${seq.length - 1} steps.`);
+    const h = seq.map((v, i) => (i ? `<i${A(k1, { d: i })}>→</i>` : "") + chip(v, i ? k1 : k0, i === seq.length - 1 ? "k1" : v % 2 ? "k2" : "", { d: i })).join("");
+    return R(S, `<div class="lt tight">${h}</div>` + eq(`steps: <b>${seq.length - 1}</b>`, k1 + 1, "k1"));
+  };
+
+  B.chord = ({ r, half, d, find }) => {
+    const S = Scene(), cx = 130, cy = 100, R0 = 84, s = R0 / r, y = cy + d * s, hx = half * s;
+    const k0 = S.step(`The perpendicular from the centre to a chord cuts the chord in half.`);
+    const k1 = S.step(`The radius, half the chord and the distance from the centre make a right-angled triangle.`);
+    const k2 = S.step(find === "r" ? `$r^2 = ${half}^2 + ${d}^2 = ${half * half + d * d}$, so $r = ${r}$.` : find === "d" ? `$d^2 = ${r}^2 - ${half}^2 = ${r * r - half * half}$, so $d = ${d}$.` : `Half chord $= \\sqrt{${r}^2 - ${d}^2} = ${half}$, so the chord is $2 \\times ${half} = ${2 * half}$.`);
+    let g = Ci(cx, cy, R0, null, "ln thick") + Ci(cx, cy, 3.5, null, "dot k0") + T(cx - 10, cy - 8, "O", null, "b");
+    g += Ln(cx - hx, y, cx + hx, y, null, "k0 thick") + Ln(cx, cy, cx, y, k0, "k2 thick") + rightMark(cx, y, 1, 0, 0, -1, 9, k0);
+    g += Ln(cx, cy, cx + hx, y, k1, "k1 thick") + P(`M${r1(cx)} ${r1(cy)}L${r1(cx + hx)} ${r1(y)}L${r1(cx)} ${r1(y)}Z`, k1, "f1");
+    g += T(cx - 12, (cy + y) / 2, find === "d" ? "d = ?" : `${d}`, k0, "k2 b", { a: "end" }) + T(cx + hx / 2, y + 14, find === "chord" ? "?" : `${half}`, k0, "b");
+    g += T(cx + hx / 2 + 12, (cy + y) / 2 - 8, find === "r" ? "r = ?" : `${r}`, k1, "k1 b", { a: "start" });
+    return R(S, svg(320, 200, g) + eq(find === "r" ? `r = <b>${r}</b>` : find === "d" ? `d = <b>${d}</b>` : `chord = <b>${2 * half}</b>`, k2, "k1"));
+  };
+
+  B.bpt = ({ ad, db, ae, ec }) => {
+    const S = Scene(), A_ = [160, 18], B_ = [36, 178], C_ = [290, 178], t = ad / (ad + db);
+    const D = [A_[0] + (B_[0] - A_[0]) * t, A_[1] + (B_[1] - A_[1]) * t], E_ = [A_[0] + (C_[0] - A_[0]) * t, A_[1] + (C_[1] - A_[1]) * t];
+    const k0 = S.step(`In triangle ABC, DE is parallel to BC.`);
+    const k1 = S.step(`Basic proportionality (Thales) theorem: a line parallel to one side divides the other two sides in the same ratio, $\\frac{AD}{DB} = \\frac{AE}{EC}$.`);
+    const k2 = S.step(`$\\frac{${ad}}{${db}} = \\frac{${ae}}{EC}$, so $EC = \\frac{${ae} \\times ${db}}{${ad}} = ${ec}$.`);
+    let g = Poly([A_, B_, C_], k0, "f0 ln thick") + Ln(D[0], D[1], E_[0], E_[1], k0, "k3 thick5");
+    [["A", A_, 0, -10], ["B", B_, -10, 8], ["C", C_, 10, 8], ["D", D, -12, 0], ["E", E_, 12, 0]].forEach(([n, p, ox, oy]) => { g += T(p[0] + ox, p[1] + oy, n, k0, "b"); });
+    const lab = (p, q, s, k, cls, side) => T((p[0] + q[0]) / 2 + side * 16, (p[1] + q[1]) / 2, s, k, cls);
+    g += lab(A_, D, ad, k1, "k1 b", -1) + lab(D, B_, db, k1, "k1 b", -1) + lab(A_, E_, ae, k1, "k2 b", 1);
+    g += G(lab(E_, C_, "?", null, "k4 b", 1), k1, { x: k2 }) + lab(E_, C_, ec, k2, "k4 big", 1);
+    return R(S, svg(320, 196, g));
+  };
+
+  B.gtable = ({ lo, h, f, kind }) => {
+    const S = Scene(), n = f.reduce((s, v) => s + v, 0);
+    let cf = 0;
+    const cfs = f.map((v) => (cf += v));
+    let h_ = cel("Class", 0, "vh") + cel("f", 0, "vh") + (kind === "median" ? cel("cf", 1, "vh") : "");
+    S.step(`Put the grouped data in a table.`);
+    let pick_, k1, k2;
+    if (kind === "mode") {
+      pick_ = f.indexOf(Math.max(...f));
+      const f1 = f[pick_], f0 = f[pick_ - 1] || 0, f2 = f[pick_ + 1] || 0, l = lo + pick_ * h, v = l + ((f1 - f0) / (2 * f1 - f0 - f2)) * h;
+      k1 = S.step(`The modal class has the highest frequency: ${l}–${l + h} with $f_1 = ${f1}$. Its neighbours have $f_0 = ${f0}$ and $f_2 = ${f2}$.`);
+      k2 = S.step(`Mode $= l + \\frac{f_1 - f_0}{2f_1 - f_0 - f_2} \\times h = ${l} + \\frac{${f1 - f0}}{${2 * f1 - f0 - f2}} \\times ${h} = ${nm(v)}$.`);
+    } else {
+      k1 = S.step(`Add up the frequencies as you go: the cumulative frequency (cf). $n = ${n}$, so $\\frac{n}{2} = ${n / 2}$.`);
+      pick_ = cfs.findIndex((c) => c >= n / 2);
+      const l = lo + pick_ * h, c0 = pick_ ? cfs[pick_ - 1] : 0, fm = f[pick_], v = l + ((n / 2 - c0) / fm) * h;
+      k2 = S.step(`The median class is the first with cf $\\ge ${n / 2}$: ${l}–${l + h}. Median $= l + \\frac{\\frac{n}{2} - cf}{f} \\times h = ${l} + \\frac{${n / 2} - ${c0}}{${fm}} \\times ${h} = ${nm(v)}$.`);
+    }
+    f.forEach((v, i) => {
+      const on = i === pick_ ? k1 + (kind === "median" ? 1 : 0) : null;
+      h_ += cel(`${lo + i * h}–${lo + (i + 1) * h}`, 0, "", { d: i, h: on }) + cel(v, 0, i === pick_ ? "b k1" : "", { d: i, h: on }) + (kind === "median" ? cel(cfs[i], k1, "k2", { d: i, h: on }) : "");
+    });
+    return R(S, grid(kind === "median" ? "1.4fr 1fr 1fr" : "1.4fr 1fr", h_, "tbl"));
+  };
+
+  B.conic = ({ kind, h, k, r, a }) => {
+    const S = Scene();
+    if (kind === "circle") {
+      const half = ((r + 2) * 280) / 202;
+      const pl = plane({ x0: h - half, x1: h + half, y0: k - r - 2, y1: k + r + 2, lx: "x", ly: "y", h: 236 });
+      S.step(`Group the $x$ terms and the $y$ terms, then complete the square for each.`);
+      const k1 = S.step(`$(x ${h < 0 ? "+" : "-"} ${Math.abs(h)})^2 + (y ${k < 0 ? "+" : "-"} ${Math.abs(k)})^2 = ${r * r}$.`);
+      S.step(`Compare with $(x - h)^2 + (y - k)^2 = r^2$: centre $(${h}, ${k})$, radius $\\sqrt{${r * r}} = ${r}$.`);
+      let d = "";
+      for (let i = 0; i <= 72; i++) { const t = (i / 72) * 2 * Math.PI; d += `${i ? "L" : "M"}${r1(pl.X(h + r * Math.cos(t)))} ${r1(pl.Y(k + r * Math.sin(t)))}`; }
+      const g = P(d, 0, "k1 thick", { draw: true }) + pl.pt(h, k, k1, "k3", `(${h}, ${k})`) + Ln(pl.X(h), pl.Y(k), pl.X(h + r), pl.Y(k), k1 + 1, "k2 thick") + T((pl.X(h) + pl.X(h + r)) / 2, pl.Y(k) + 12, `r = ${r}`, k1 + 1, "k2 b");
+      return R(S, pl.svg(g));
+    }
+    const pl = plane({ x0: -a - 2, x1: Math.max(8, 3 * a), y0: -Math.max(6, 3 * a), y1: Math.max(6, 3 * a), lx: "x", ly: "y", h: 236 });
+    S.step(`Compare $y^2 = ${4 * a}x$ with the standard form $y^2 = 4ax$.`);
+    const k1 = S.step(`$4a = ${4 * a}$, so $a = ${a}$.`);
+    S.step(`The focus is $(a, 0) = (${a}, 0)$ and the directrix is the line $x = -${a}$.`);
+    const top = Math.max(6, 3 * a);
+    let d = "";
+    for (let i = 0; i <= 80; i++) { const yy = -top + (2 * top * i) / 80; d += `${i ? "L" : "M"}${r1(pl.X((yy * yy) / (4 * a)))} ${r1(pl.Y(yy))}`; }
+    const g = P(d, 0, "k1 thick", { draw: true, clip: pl.clipId }) + pl.pt(a, 0, k1, "k3", `(${a}, 0)`) + Ln(pl.X(-a), pl.Y(-top), pl.X(-a), pl.Y(top), k1 + 1, "k4 dash") + T(pl.X(-a) - 4, pl.Y(top * 0.8), `x = −${a}`, k1 + 1, "k4 b", { a: "end" });
+    return R(S, pl.svg(g));
+  };
+
+  B.lineeq = ({ x1, y1, x2, y2 }) => {
+    const S = Scene(), m = (y2 - y1) / (x2 - x1), c = y1 - m * x1;
+    const lo = Math.min(x1, x2, 0) - 2, hi = Math.max(x1, x2, 0) + 2, f = (x) => m * x + c;
+    const ys = [f(lo), f(hi), 0, c];
+    const pl = plane({ x0: lo, x1: hi, y0: Math.min(...ys) - 1, y1: Math.max(...ys) + 1, lx: "x", ly: "y" });
+    S.step(`Plot the two points.`);
+    const k1 = S.step(`Slope $m = \\frac{${y2} - ${par(y1)}}{${x2} - ${par(x1)}} = ${nm(m)}$.`);
+    const k2 = S.step(`Put one point into $y = mx + c$: $${y1} = ${nm(m)} \\times ${par(x1)} + c$, so $c = ${nm(c)}$.`);
+    S.step(`The line is $y = ${Hp().terms([[m, "x"], [c, ""]])}$; it cuts the $y$-axis at ${nm(c)}.`);
+    const g = pl.fn(f, k1, "k1 thick") + pl.pt(x1, y1, 0, "k2", `(${x1}, ${y1})`) + pl.pt(x2, y2, 0, "k2", `(${x2}, ${y2})`) + pl.pt(0, c, k2, "k3", `c = ${nm(c)}`, { dx: 8, a: "start", dy: 0 });
+    return R(S, pl.svg(g));
+  };
+
+  B.variance = ({ vals, ask }) => {
+    const S = Scene(), n = vals.length, mu = vals.reduce((s, v) => s + v, 0) / n, dev = vals.map((v) => v - mu), sq = dev.map((d) => d * d), ss = sq.reduce((s, v) => s + v, 0);
+    const k0 = S.step(`Mean: $\\bar x = \\frac{${vals.join(" + ")}}{${n}} = ${nm(mu)}$.`);
+    const k1 = S.step(`Find each deviation from the mean, $x - \\bar x$.`);
+    const k2 = S.step(`Square the deviations and add: $\\sum (x - \\bar x)^2 = ${nm(ss)}$.`);
+    S.step(`Variance $\\sigma^2 = \\frac{${nm(ss)}}{${n}} = ${nm(ss / n)}$${ask === "sd" ? `; standard deviation $\\sigma = \\sqrt{${nm(ss / n)}} = ${nm(Math.sqrt(ss / n))}$` : ""}.`);
+    let h = cel("x", k0, "vh") + cel("x − x̄", k1, "vh") + cel("(x − x̄)²", k2, "vh");
+    vals.forEach((v, i) => { h += cel(v, k0, "", { d: i }) + cel(nm(dev[i]), k1, "k2", { d: i }) + cel(nm(sq[i]), k2, "k1", { d: i }); });
+    h += cel("", null, "") + cel("sum", k2, "vh") + cel(nm(ss), k2, "k1 b");
+    return R(S, grid("1fr 1fr 1fr", h, "tbl") + eq(ask === "sd" ? `σ = <b>${nm(Math.sqrt(ss / n))}</b>` : `σ² = <b>${nm(ss / n)}</b>`, k2 + 1, "k1"));
+  };
+
+  B.contk = ({ a, m1, c1, m2, k }) => {
+    const S = Scene(), v = m1 * a + c1, fL = (x) => m1 * x + c1, fR = (x) => m2 * x + k;
+    const x0 = a - 4, x1 = a + 4, ys = [fL(x0), fR(x1), v, 0];
+    const pl = plane({ x0, x1, y0: Math.min(...ys) - 1, y1: Math.max(...ys) + 1, lx: "x", ly: "y" });
+    S.step(`For the graph to be continuous at $x = ${a}$, the two pieces must meet there — no jump.`);
+    const k1 = S.step(`Left piece at $x = ${a}$: $${m1} \\times ${par(a)} ${c1 < 0 ? "-" : "+"} ${Math.abs(c1)} = ${v}$.`);
+    const k2 = S.step(`Right piece must give the same value: $${m2} \\times ${par(a)} + k = ${v}$.`);
+    S.step(`So $k = ${v} - ${par(m2 * a)} = ${k}$.`);
+    const g = pl.fn(fL, 0, "k1 thick", { b: a }) + pl.pt(a, v, k1, "k3", `(${a}, ${v})`) + pl.fn(fR, k2 + 1, "k2 thick", { a });
+    return R(S, pl.svg(g));
+  };
+
   /* ---------- Player ---------- */
   function html(it) {
     if (!it || !it.viz || !B[it.viz.t] || !U()) return "";
@@ -2047,13 +2356,18 @@
     if (auto && n > 1) play();
   }
 
+  function fig(it) {
+    if (!it || !it.fig || !it.viz || !B[it.viz.t]) return "";
+    try { return `<div class="vz vz-fig" aria-hidden="true"><div class="vz-stage">${B[it.viz.t](it.viz).html}</div></div>`; } catch (e) { return ""; }
+  }
+
   function mount(root, auto) {
-    (root || document).querySelectorAll(".vz").forEach((v) => {
+    (root || document).querySelectorAll(".vz:not(.vz-fig)").forEach((v) => {
       const d = v.closest("details");
       if (v.closest("[hidden]") || (d && !d.open)) return;
       bind(v, auto !== false);
     });
   }
 
-  window.MZV = { B, html, bind, mount };
+  window.MZV = { B, html, bind, mount, fig };
 })();

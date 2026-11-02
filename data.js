@@ -3,10 +3,10 @@
   const R = String.raw;
 
   window.MZ_LEVELS = [
-    { id: "foundation", name: "Foundation", range: "Class 1–5", color: "#f59e0b", icon: "blocks", blurb: "Place value, the four operations, fractions, decimals, Roman numerals, shapes, angles and turns, measurement, symmetry and pictographs." },
+    { id: "foundation", name: "Foundation", range: "Class 1–5", color: "#f59e0b", icon: "blocks", blurb: "Place value, the four operations, fractions, decimals, Roman numerals, shapes, angles and turns, time, money, directions, measurement, symmetry and data." },
     { id: "middle", name: "Middle school", range: "Class 6–8", color: "#10b981", icon: "ruler", blurb: "Integers, primes, HCF and LCM, ratios, percentages, exponents, algebra, lines and angles, congruence, constructions, solids, mensuration and graphs." },
-    { id: "secondary", name: "Secondary", range: "Class 9–10", color: "#3b82f6", icon: "axes", blurb: "Polynomials, quadratics, Euclid, coordinate geometry, trigonometry, areas related to circles and probability." },
-    { id: "senior", name: "Senior secondary", range: "Class 11–12", color: "#8b5cf6", icon: "integral", blurb: "Functions, inverse trig, complex numbers, inequalities, counting, calculus, matrices, vectors and distributions." },
+    { id: "secondary", name: "Secondary", range: "Class 9–10", color: "#3b82f6", icon: "axes", blurb: "Polynomials, quadratics, Euclid, proofs and algorithms, coordinate geometry, trigonometry, circles, statistics and probability." },
+    { id: "senior", name: "Senior secondary", range: "Class 11–12", color: "#8b5cf6", icon: "integral", blurb: "Functions, inverse trig, complex numbers, inequalities, counting, conics, continuity, calculus, matrices, vectors, statistics and distributions." },
     { id: "college", name: "College and beyond", range: "Undergraduate", color: "#ec4899", icon: "cap", blurb: "Linear algebra, multivariable calculus, series, ODEs, number theory, graphs and statistics." },
   ];
 
@@ -269,6 +269,63 @@
         steps: [R`$135^\circ$ is between $90^\circ$ and $180^\circ$, so it is obtuse.`, R`$180^\circ - 135^\circ = 45^\circ$.`],
         ans: R`Obtuse, $45^\circ$ short of a straight angle`,
       }, { skills: ["angle-kind"] }),
+
+    T("time-calendar", "foundation", "Arithmetic", "Time and the calendar",
+      "Read clocks, work out how long things take, and count days on a calendar.",
+      [
+        "On a clock face the short hand shows the hour and the long hand shows the minutes.",
+        "The long hand moves 5 minutes for every number: pointing at 4 means 20 minutes past.",
+        "60 minutes make 1 hour and 24 hours make 1 day. Add hours first, then minutes; carry 60 minutes as 1 hour.",
+        "a.m. is from midnight to noon; p.m. is from noon to midnight. 24-hour time adds 12 to p.m. hours: 3 p.m. is 15:00.",
+        "A week has 7 days, so the same date 7, 14 or 21 days later falls on the same weekday.",
+        "Months have 30 or 31 days, except February with 28 (29 in a leap year).",
+      ],
+      [
+        ["Units of time", R`1\text{ h} = 60\text{ min},\ 1\text{ day} = 24\text{ h},\ 1\text{ week} = 7\text{ days}`],
+        ["Weekday shift", R`n \text{ days later} \Rightarrow \text{move on } (n \bmod 7) \text{ days}`],
+      ],
+      {
+        q: "A film starts at 4:40 and lasts 1 hour 35 minutes. When does it end?",
+        steps: ["Add the hour: 4:40 + 1 hour = 5:40.", "Add 35 minutes: 40 + 35 = 75 minutes = 1 hour 15 minutes.", "So the film ends at 6:15."],
+        ans: "6:15",
+      }),
+
+    T("money", "foundation", "Arithmetic", "Money",
+      "Add prices, find the total bill and work out the change.",
+      [
+        "₹1 = 100 paise, so ₹12.50 means 12 rupees and 50 paise.",
+        "Line up the decimal points when you add or subtract amounts of money.",
+        "Change = money paid − total cost.",
+        "To find the cost of many of the same item, multiply the price of one by how many.",
+      ],
+      [
+        ["Rupees and paise", R`₹1 = 100 \text{ paise}`],
+        ["Change", R`\text{change} = \text{paid} - \text{cost}`],
+      ],
+      {
+        q: "Riya buys a pen for ₹15.50 and a notebook for ₹42. She pays with a ₹100 note. What change does she get?",
+        steps: ["Total: ₹15.50 + ₹42.00 = ₹57.50.", "Change: ₹100.00 − ₹57.50 = ₹42.50."],
+        ans: "₹42.50",
+      }),
+
+    T("maps-directions", "foundation", "Geometry", "Maps and directions",
+      "North, south, east and west, turning left and right, and reading simple maps.",
+      [
+        "The four main directions are North, East, South and West, going clockwise. Between them are North-East, South-East, South-West and North-West.",
+        "A right turn is clockwise and a left turn is anticlockwise.",
+        R`A quarter turn is $90^\circ$, a half turn is $180^\circ$ and a full turn is $360^\circ$.`,
+        "On most maps North is at the top. A scale such as 1 cm : 1 km tells you the real distance.",
+        "A grid map names squares by a letter and a number, like B3.",
+      ],
+      [
+        ["Turns", R`\tfrac14 \text{ turn} = 90^\circ,\ \tfrac12 \text{ turn} = 180^\circ,\ 1 \text{ turn} = 360^\circ`],
+        ["Map scale", R`\text{real distance} = \text{map distance} \times \text{scale}`],
+      ],
+      {
+        q: "You face North and turn right through 90°, then right again through 90°. Which way do you face?",
+        steps: ["North, turn right a quarter turn: East.", "Another quarter turn right: South."],
+        ans: "South",
+      }),
 
     /* ---------- Middle school ---------- */
     T("integers", "middle", "Arithmetic", "Integers",
@@ -635,6 +692,26 @@
         ans: "Mean 6, median 6",
       }, { skills: ["mean"], tool: "stats" }),
 
+    T("number-systems", "middle", "Arithmetic", "A story of numbers: other bases",
+      "Our numbers use base 10, but any whole number can be written in base 2, 5, 8 or others.",
+      [
+        "In base 10 the places are worth 1, 10, 100, 1000, … Each place is 10 times the one to its right.",
+        "In base $b$ the places are worth $1, b, b^2, b^3, …$ and the digits go from 0 to $b - 1$.",
+        "Base 2 (binary) uses only 0 and 1. Computers store everything in binary.",
+        "To convert to base 10, multiply each digit by its place value and add.",
+        "To convert from base 10, keep dividing by the base and read the remainders from bottom to top.",
+        "People have counted in many ways: tally marks, Egyptian symbols, [[roman|Roman numerals]], and the Indian place-value system with zero that we use today.",
+      ],
+      [
+        ["Place values in base b", R`d_2 d_1 d_0\ (\text{base } b) = d_2 b^2 + d_1 b + d_0`],
+        ["Binary example", R`1011_2 = 8 + 0 + 2 + 1 = 11`],
+      ],
+      {
+        q: R`Write $213_5$ in base 10.`,
+        steps: [R`The places are worth $25, 5, 1$.`, R`$2 \times 25 + 1 \times 5 + 3 \times 1 = 50 + 5 + 3 = 58$.`],
+        ans: R`$58$`,
+      }),
+
     /* ---------- Secondary ---------- */
     T("graphs-pie", "middle", "Statistics", "Bar graphs, pie charts and line graphs",
       "Different graphs for different data: compare with bars, show parts of a whole with a pie, show change with a line.",
@@ -943,6 +1020,46 @@
         steps: ["Favourable outcomes: (1,6), (2,5), (3,4), (4,3), (5,2), (6,1), which is 6 of them.", R`$P = \frac{6}{36} = \frac{1}{6}$.`],
         ans: R`$\frac{1}{6}$`,
       }, { skills: ["dice"] }),
+
+    T("propositions", "secondary", "Discrete maths", "Proofs, statements and converses",
+      "How mathematicians make statements, test them and prove them.",
+      [
+        "A statement is a sentence that is either true or false, such as \"7 is a prime number\".",
+        R`Many theorems have the form "if $P$, then $Q$". $P$ is the hypothesis and $Q$ is the conclusion.`,
+        R`The converse swaps the parts: "if $Q$, then $P$". A true statement can have a false converse.`,
+        "One counter-example is enough to show a statement is false.",
+        "A proof starts from axioms and statements already proved, and reaches the result step by step.",
+        R`Proof by contradiction: assume the opposite and show it leads to something impossible (as in proving $\sqrt2$ is [[real-numbers|irrational]]).`,
+      ],
+      [
+        ["Statement", R`P \Rightarrow Q`],
+        ["Converse", R`Q \Rightarrow P`],
+        ["Contrapositive (always equivalent)", R`\neg Q \Rightarrow \neg P`],
+      ],
+      {
+        q: "Statement: \"If a number is divisible by 4, then it is even.\" Is the converse true?",
+        steps: ["The converse is: \"If a number is even, then it is divisible by 4.\"", "6 is even but not divisible by 4: a counter-example.", "So the converse is false."],
+        ans: "No — 6 is a counter-example",
+      }),
+
+    T("algorithms", "secondary", "Number theory", "Algorithms",
+      "Step-by-step methods that always finish with the answer.",
+      [
+        "An algorithm is a list of exact steps; following them always gives the result.",
+        R`Euclid's division lemma: for whole numbers $a$ and $b > 0$ there are unique $q$ and $r$ with $a = bq + r$ and $0 \le r < b$.`,
+        R`Euclid's algorithm for the [[factors-multiples|HCF]]: divide, then divide the divisor by the remainder, until the remainder is 0. The last divisor is the HCF.`,
+        "The Collatz rule: halve an even number, or multiply an odd number by 3 and add 1. Every number tried so far reaches 1, but nobody has proved it always does.",
+      ],
+      [
+        ["Division lemma", R`a = bq + r,\quad 0 \le r < b`],
+        ["Key fact", R`\text{HCF}(a, b) = \text{HCF}(b, r)`],
+        ["Collatz step", R`n \to \begin{cases} n/2 & n \text{ even} \\ 3n + 1 & n \text{ odd} \end{cases}`],
+      ],
+      {
+        q: "Use Euclid's algorithm to find the HCF of 455 and 42.",
+        steps: [R`$455 = 42 \times 10 + 35$.`, R`$42 = 35 \times 1 + 7$.`, R`$35 = 7 \times 5 + 0$.`, "The remainder is 0, so the HCF is 7."],
+        ans: R`$7$`,
+      }),
 
     /* ---------- Senior secondary ---------- */
     T("sets", "senior", "Algebra", "Sets, relations and functions",
@@ -1285,6 +1402,67 @@
         ans: R`Maximum $Z = 12$ at $(4, 0)$`,
       }, { tool: "graph" }),
 
+    T("dispersion", "senior", "Statistics", "Statistics: variance and standard deviation",
+      "Measures of how spread out data is around its mean.",
+      [
+        "The range is the largest value minus the smallest; it uses only two values.",
+        "Mean deviation is the average distance of the values from the mean (or median).",
+        R`Variance $\sigma^2$ is the average of the squared deviations from the mean.`,
+        R`Standard deviation $\sigma$ is the square root of the variance, in the same units as the data.`,
+        "A smaller standard deviation means the data is more tightly bunched around the mean.",
+        R`The coefficient of variation $\frac{\sigma}{\bar x} \times 100$ compares the spread of two data sets.`,
+      ],
+      [
+        ["Variance", R`\sigma^2 = \frac{1}{n}\sum (x_i - \bar x)^2 = \frac{1}{n}\sum x_i^2 - \bar x^2`],
+        ["Standard deviation", R`\sigma = \sqrt{\sigma^2}`],
+        ["Coefficient of variation", R`\text{CV} = \frac{\sigma}{\bar x} \times 100`],
+      ],
+      {
+        q: "Find the variance and standard deviation of 3, 5, 7, 9.",
+        steps: [R`Mean $= 24 \div 4 = 6$.`, "Deviations: −3, −1, 1, 3. Squares: 9, 1, 1, 9, total 20.", R`$\sigma^2 = 20 \div 4 = 5$ and $\sigma = \sqrt5 \approx 2.24$.`],
+        ans: R`$\sigma^2 = 5$, $\sigma = \sqrt5$`,
+      }),
+
+    T("continuity", "senior", "Calculus", "Continuity and differentiability",
+      "A function is continuous where its graph has no breaks; the chain rule differentiates functions inside functions.",
+      [
+        R`$f$ is continuous at $x = a$ if $\lim_{x \to a^-} f(x) = \lim_{x \to a^+} f(x) = f(a)$.`,
+        "For a piecewise function, make the two pieces give the same value at the join.",
+        R`Every differentiable function is continuous, but not the other way round: $|x|$ is continuous at 0 but has a corner there.`,
+        R`Chain rule: if $y = f(u)$ and $u = g(x)$, then $\frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx}$.`,
+        R`Work from outside in: differentiate the outer function, keep the inside, then multiply by the derivative of the inside.`,
+      ],
+      [
+        ["Continuity at a", R`\lim_{x \to a} f(x) = f(a)`],
+        ["Chain rule", R`\frac{d}{dx} f(g(x)) = f'(g(x))\,g'(x)`],
+        ["Power of a function", R`\frac{d}{dx}(ax + b)^n = na(ax + b)^{n-1}`],
+        ["Logarithmic derivative", R`\frac{d}{dx}\ln f(x) = \frac{f'(x)}{f(x)}`],
+      ],
+      {
+        q: R`Differentiate $y = (3x + 1)^5$.`,
+        steps: [R`Let $u = 3x + 1$, so $y = u^5$.`, R`$\frac{dy}{du} = 5u^4$ and $\frac{du}{dx} = 3$.`, R`$\frac{dy}{dx} = 5u^4 \times 3 = 15(3x + 1)^4$.`],
+        ans: R`$15(3x + 1)^4$`,
+      }),
+
+    T("app-integrals", "senior", "Calculus", "Application of integrals",
+      "Use definite integrals to find the area of a region under a curve or between two curves.",
+      [
+        R`The area between $y = f(x) \ge 0$, the $x$-axis and the lines $x = a$, $x = b$ is $\int_a^b f(x)\,dx$.`,
+        "If the curve is below the axis the integral is negative; take its absolute value for the area.",
+        R`The area between two curves is $\int_a^b (\text{top} - \text{bottom})\,dx$.`,
+        "Sketch the region first to find which curve is on top and where the curves meet.",
+      ],
+      [
+        ["Area under a curve", R`A = \int_a^b f(x)\,dx`],
+        ["Area between curves", R`A = \int_a^b \big(f(x) - g(x)\big)\,dx`],
+        ["Area of a circle (check)", R`4\int_0^r \sqrt{r^2 - x^2}\,dx = \pi r^2`],
+      ],
+      {
+        q: R`Find the area under $y = 3x^2$ from $x = 0$ to $x = 2$.`,
+        steps: [R`$A = \int_0^2 3x^2\,dx$.`, R`An antiderivative is $x^3$.`, R`$A = 2^3 - 0^3 = 8$ square units.`],
+        ans: "8 square units",
+      }),
+
     /* ---------- College ---------- */
     T("linear-algebra", "college", "Linear algebra", "Linear algebra",
       "Vector spaces, linear maps and the eigenvalues that describe them.",
@@ -1503,5 +1681,28 @@
     ["Vector", "A quantity with both size and direction.", "vectors"],
     ["Vertex", "A corner where sides or edges meet. Plural: vertices.", "shapes"],
     ["Volume", "The amount of space a solid takes up, in cubic units.", "surface-volume"],
-  ];
+    ["Algorithm", "A list of exact steps that always ends with the answer, such as Euclid's method for the HCF.", "algorithms"],
+    ["Axiom", "A basic truth accepted without proof, used all through maths. Euclid called them common notions.", "euclid"],
+    ["Postulate", "A basic assumption about geometry accepted without proof, such as \"a line can be drawn through any two points\".", "euclid"],
+    ["Converse", "The statement made by swapping the \"if\" and \"then\" parts. It may be false even when the original is true.", "propositions"],
+    ["Counter-example", "One example that shows a statement is false.", "propositions"],
+    ["Binary", "Base 2: numbers written with only the digits 0 and 1.", "number-systems"],
+    ["Tally marks", "Lines used for counting, grouped in fives: four lines and one across.", "data-handling"],
+    ["Transversal", "A line that crosses two or more other lines.", "lines-angles"],
+    ["Corresponding angles", "Angles in the same position at each crossing of a transversal. They are equal when the lines are parallel.", "lines-angles"],
+    ["Co-interior angles", R`Angles between two lines on the same side of a transversal. They add to $180^\circ$ when the lines are parallel.`, "lines-angles"],
+    ["Rotational symmetry", "A shape has it if it looks the same after a turn of less than a full turn about its centre.", "symmetry"],
+    ["Bisect", "Cut into two equal parts.", "constructions"],
+    ["Semi-perimeter", R`Half the perimeter of a triangle, $s = \frac{a + b + c}{2}$, used in Heron's formula.`, "mensuration-2d"],
+    ["Cumulative frequency", "A running total of the frequencies, used to find the median of grouped data.", "statistics-grouped"],
+    ["Focus", R`The fixed point of a parabola. For $y^2 = 4ax$ it is $(a, 0)$.`, "lines-conics"],
+    ["Directrix", R`The fixed line of a parabola. For $y^2 = 4ax$ it is $x = -a$.`, "lines-conics"],
+    ["Variance", "The average of the squared distances from the mean.", "dispersion"],
+    ["Standard deviation", "The square root of the variance; a measure of spread in the same units as the data.", "dispersion"],
+    ["Continuous function", "A function whose graph has no breaks or jumps.", "continuity"],
+    ["Chain rule", R`To differentiate a function of a function: $\frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx}$.`, "continuity"],
+    ["Determinant", "A single number worked out from a square matrix; it is 0 exactly when the matrix has no inverse.", "matrices"],
+    ["Geometric mean", R`For two positive numbers, $\sqrt{ab}$. It is never more than the arithmetic mean.`, "sequences"],
+    ["Bayes' theorem", R`Turns $P(B \mid A)$ around into $P(A \mid B) = \frac{P(A)P(B \mid A)}{P(B)}$.`, "probability-adv"],
+  ].sort((a, b) => a[0].localeCompare(b[0]));
 })();

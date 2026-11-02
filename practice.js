@@ -7,7 +7,7 @@
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const sgn = () => (Math.random() < 0.5 ? -1 : 1);
   const par = (n) => (n < 0 ? `(${n})` : `${n}`);
-  const inr = (n) => "₹" + n.toLocaleString("en-IN");
+  const inr = (n) => "₹" + n.toLocaleString("en-IN", Number.isInteger(n) ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const ord = (n) => { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
   function shuffle(a) {
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
@@ -326,6 +326,69 @@
     return { viz: { t: "angkind", a }, q: `What kind of angle is $${a}^\\circ$?`, opts: [kind, ...ANG_KINDS.filter((k) => k !== kind)], how: [`Acute: less than $90^\\circ$. Right: $90^\\circ$. Obtuse: between $90^\\circ$ and $180^\\circ$.`, `Straight: $180^\\circ$. Reflex: between $180^\\circ$ and $360^\\circ$.`, `So $${a}^\\circ$ is ${kind.toLowerCase()}.`] };
   }, true);
 
+  const hm = (H, Mi) => `${H}:${String(Mi).padStart(2, "0")}`;
+  add("clock", "time-calendar", "Reading a clock", () => {
+    const h = ri(1, 12), m = 5 * ri(0, 11);
+    const swapped = hm(m ? m / 5 : 12, (h * 5) % 60);
+    return { viz: { t: "clock", h, m }, fig: true, q: `What time does the clock show?`, opts: [hm(h, m), swapped, hm((h % 12) + 1, m), hm(h, (m + 30) % 60), hm(h === 1 ? 12 : h - 1, m)], how: [`The short hand gives the hour: ${h}.`, m ? `The long hand points at ${m / 5}; count in fives to get ${m} minutes.` : `The long hand points at 12: o'clock.`, `So the time is ${hm(h, m)}.`] };
+  }, true);
+
+  add("elapsed", "time-calendar", "Time taken", () => {
+    const h = ri(1, 10), m = 5 * ri(0, 11), dh = ri(0, 2), dm = 5 * ri(1, 11);
+    const tot = h * 60 + m + dh * 60 + dm, H = ((Math.floor(tot / 60) - 1) % 12) + 1, Mi = tot % 60;
+    const ev = pick([["A film starts", "end"], ["A train journey starts", "end"], ["A cricket match starts", "finish"], ["A picnic starts", "end"], ["A music class starts", "finish"]]);
+    return { viz: { t: "clock", h, m, dh, dm }, q: `${ev[0]} at ${hm(h, m)} and lasts ${dh ? `${dh} hour${dh > 1 ? "s" : ""} and ` : ""}${dm} minutes. At what time does it ${ev[1]}?`, opts: [hm(H, Mi), hm(H, (Mi + 10) % 60), hm((H % 12) + 1, Mi), hm(H === 1 ? 12 : H - 1, Mi), hm(((h + dh - 1) % 12) + 1, (m + dm) % 60 === Mi ? (Mi + 5) % 60 : (m + dm) % 60)], how: [`Start at ${hm(h, m)}.`, dh ? `Add ${dh} hour${dh > 1 ? "s" : ""}: ${hm(((h + dh - 1) % 12) + 1, m)}.` : `No whole hours to add.`, `Add ${dm} minutes${m + dm >= 60 ? " (60 minutes make 1 hour)" : ""}: ${hm(H, Mi)}.`] };
+  });
+
+  const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  add("calendar", "time-calendar", "Calendar days", () => {
+    const d0 = ri(0, 6), date = ri(1, 9), jump = pick([7, 14, 3, 5, 10, 12, 16, 20]);
+    const mon = pick(["March", "July", "October", "January"]), d1 = (d0 + jump) % 7;
+    return { viz: { t: "steps", lines: [[`${date} + ${jump} = ${date + jump}`, `Count on ${jump} days from ${date} ${mon}.`], [`${jump} = ${Math.floor(jump / 7)} \\times 7 + ${jump % 7}`, `Every 7 days is a whole week and lands on the same day again.`], [`\\text{${DAYS[d0]}} + ${jump % 7} \\text{ days} = \\text{${DAYS[d1]}}`, `So move on ${jump % 7} day${jump % 7 === 1 ? "" : "s"} from ${DAYS[d0]}.`]] }, q: `${date} ${mon} is a ${DAYS[d0]}. What day of the week is ${date + jump} ${mon}?`, opts: [DAYS[d1], ...DAYS.filter((d) => d !== DAYS[d1])], how: jump < 7 ? [`${date + jump} ${mon} is ${jump} days later.`, `Count on ${jump} days from ${DAYS[d0]}: ${DAYS[d1]}.`] : jump % 7 ? [`${jump} days later is ${Math.floor(jump / 7)} week${jump < 14 ? "" : "s"} and ${jump % 7} day${jump % 7 === 1 ? "" : "s"}.`, `Whole weeks don't change the day, so count on ${jump % 7} from ${DAYS[d0]}: ${DAYS[d1]}.`] : [`${jump} days is exactly ${jump / 7} week${jump === 7 ? "" : "s"}.`, `Whole weeks don't change the day, so it is a ${DAYS[d1]} again.`] };
+  }, true);
+
+  const SHOP = [["Pencil", "a pencil", [5, 12]], ["Notebook", "a notebook", [25, 60]], ["Eraser", "an eraser", [3, 10]], ["Pen", "a pen", [10, 40]], ["Ruler", "a ruler", [8, 20]], ["Crayons", "a box of crayons", [30, 80]]];
+  const andList = (xs) => (xs.length > 1 ? `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}` : xs[0]);
+  add("money", "money", "Shopping and change", () => {
+    const picked = sample(SHOP, ri(2, 3)), items = picked.map(([n, , [lo, hi]]) => [n, ri(lo, hi) + pick([0, 0, 0.5, 0.25, 0.75])]);
+    const tot = items.reduce((s, it) => s + it[1], 0);
+    const rs = (v) => `₹${Number.isInteger(v) ? v : v.toFixed(2)}`;
+    const bought = andList(picked.map((p, i) => `${p[1]} for ${rs(items[i][1])}`));
+    if (Math.random() < 0.5) return { viz: { t: "money", items }, q: `Riya buys ${bought}. How much does she spend?`, ans: [tot], money: true, dec: true, wrong: [tot + 1, tot - 1, tot + 10, Math.floor(tot)], how: [`Add the prices: ${items.map((i) => rs(i[1])).join(" + ")}.`, `Total = ${rs(tot)}.`] };
+    const paid = [50, 100, 200, 500].find((p) => p > tot);
+    const ch = Math.round((paid - tot) * 100) / 100;
+    return { viz: { t: "money", items, paid }, q: `Riya buys ${bought}. She pays with a ${rs(paid)} note. How much change does she get?`, ans: [ch], money: true, dec: true, wrong: [ch + 1, ch - 1, tot, ch + 10], how: [`Total cost: ${rs(tot)}.`, `Change = ${rs(paid)} − ${rs(tot)} = ${rs(ch)}.`] };
+  });
+
+  const DIRN = ["North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West"];
+  add("directions", "maps-directions", "Directions and turns", () => {
+    const start = 2 * ri(0, 3), n = ri(1, 3), turns = [];
+    let idx = start;
+    for (let i = 0; i < n; i++) { const side = pick(["right", "left"]), deg = pick([90, 90, 180, 45]); turns.push([side, deg]); idx = (idx + (side === "right" ? 1 : -1) * (deg / 45) + 8) % 8; }
+    const desc = turns.map(([s, d]) => `turns ${s} through ${d}°`).join(", then ");
+    return { viz: { t: "compass", start, turns }, q: `Aman faces ${DIRN[start]}. He ${desc}. Which way is he facing now?`, opts: [DIRN[idx], DIRN[(idx + 4) % 8], DIRN[(idx + 2) % 8], DIRN[(idx + 6) % 8], DIRN[(idx + 1) % 8]], how: [`Right is clockwise (N → E → S → W); left is anticlockwise.`, `90° is a quarter turn, 180° a half turn, 45° half of a quarter turn.`, `Follow each turn in order: he ends facing ${DIRN[idx]}.`] };
+  }, true);
+
+  add("tally", "data-handling", "Tally marks", () => {
+    const n = ri(6, 29);
+    return { viz: { t: "tally", n }, fig: true, q: `How many do these tally marks show?`, ans: [n], show: M(n), wrong: [n + 1, n - 1, n + 5, n - 5, Math.floor(n / 5) + (n % 5)], how: [`Each bundle of four lines with a line across is 5.`, `${Math.floor(n / 5)} bundles make ${Math.floor(n / 5) * 5}; add the ${n % 5} single line${n % 5 === 1 ? "" : "s"}.`, `Total: ${n}.`] };
+  }, true);
+
+  const BAR_SETS = [["Mon", "Tue", "Wed", "Thu", "Fri"], ["Red", "Blue", "Green", "Pink"], ["6A", "6B", "6C", "6D"]];
+  add("bar-graph", "data-handling", "Reading bar graphs", () => {
+    const labels = pick(BAR_SETS), step = pick([2, 5, 10]), vals = labels.map(() => step * ri(1, 8));
+    const i = ri(0, labels.length - 1);
+    const what = labels[0] === "Mon" ? "books borrowed" : labels[0] === "Red" ? "children who chose each colour" : "students in each section";
+    const r = Math.random();
+    if (r < 0.35) return { viz: { t: "bars", labels, vals, step, i }, fig: true, q: `The bar graph shows ${what}. What is the value for ${labels[i]}?`, ans: [vals[i]], show: M(vals[i]), wrong: [vals[i] + step, vals[i] - step, vals[i] / step], how: [`Each grid line is ${step}.`, `The ${labels[i]} bar reaches ${vals[i]}.`] };
+    let j;
+    do j = ri(0, labels.length - 1); while (j === i || vals[j] === vals[i]);
+    const [a, b] = vals[i] > vals[j] ? [i, j] : [j, i];
+    const ask = r < 0.7 ? "diff" : "total";
+    const v = ask === "diff" ? vals[a] - vals[b] : vals[a] + vals[b];
+    return { viz: { t: "bars", labels, vals, step, i: a, j: b, ask }, fig: true, q: ask === "diff" ? `The bar graph shows ${what}. How many more for ${labels[a]} than for ${labels[b]}?` : `The bar graph shows ${what}. What is the total for ${labels[a]} and ${labels[b]} together?`, ans: [v], show: M(v), wrong: [ask === "diff" ? vals[a] + vals[b] : vals[a] - vals[b], v + step, v - step], how: [`Read each bar against the scale (each line is ${step}).`, `${labels[a]}: ${vals[a]}. ${labels[b]}: ${vals[b]}.`, ask === "diff" ? `${vals[a]} − ${vals[b]} = ${v}.` : `${vals[a]} + ${vals[b]} = ${v}.`] };
+  }, true);
+
   /* ================= Middle school ================= */
   add("integers", "integers", "Integers", () => {
     const a = nz(-25, 25), b = nz(-25, 25), c = nz(-25, 25);
@@ -563,7 +626,7 @@
   add("geo-terms", "geometry-basics", "Points, lines and rays", () => {
     const [kind, name, why] = pick(GEO_FIG);
     const others = GEO_FIG.filter((g) => g[1] !== name && !(kind === "perpendicular" && g[0] === "intersecting") && !(kind === "intersecting" && g[0] === "perpendicular")).map((g) => g[1]);
-    return { viz: { t: "geofig", kind }, q: `What is the name of the figure in the picture?`, opts: [name, ...others], how: [why, `So the figure shows: ${name.toLowerCase()}.`] };
+    return { viz: { t: "geofig", kind }, fig: true, q: `What is the name of this figure?`, opts: [name, ...others], how: [why, `So the figure shows: ${name.toLowerCase()}.`] };
   }, true);
 
   const CONGR = [
@@ -616,6 +679,44 @@
     do { w1 = ri(2, 12); d1 = ri(2, 24); w2 = ri(2, 16); } while (w2 === w1 || (w1 * d1) % w2);
     const d2 = (w1 * d1) / w2;
     return { viz: { t: "invprop", w1, d1, w2, who: ctx[0], unit: ctx[1] }, q: `${w1} ${ctx[0]} take ${d1} ${ctx[1]} to ${ctx[2]}. How many ${ctx[1]} would ${w2} ${ctx[0]} take?`, ans: [d2], show: M(`${d2}\\text{ ${ctx[1]}}`), wrong: [(d1 * w2) / w1, d1 + w1 - w2, d1], how: [`More ${ctx[0]} means fewer ${ctx[1]}: inverse proportion, so ${ctx[0]} × ${ctx[1]} stays the same.`, `$${w1} \\times ${d1} = ${w1 * d1}$.`, `$${w1 * d1} \\div ${w2} = ${d2}$ ${ctx[1]}.`] };
+  });
+
+  add("bases", "number-systems", "Other number bases", () => {
+    const base = pick([2, 2, 5, 8]), L = base === 2 ? ri(4, 6) : 3;
+    let ds = String(ri(1, base - 1));
+    for (let i = 1; i < L; i++) ds += ri(0, base - 1);
+    const val = parseInt(ds, base), digSum = ds.split("").reduce((s, d) => s + +d, 0);
+    return { viz: { t: "bases", ds, base }, q: `What is $${ds}_{${base}}$ (base ${base}) written in our usual base-10 numbers?`, ans: [val], show: M(val), wrong: [digSum, val + base, val - 1, parseInt(ds.split("").reverse().join(""), base)], how: [`In base ${base} the places are worth ${Array.from({ length: L }, (_, i) => base ** (L - 1 - i)).join(", ")} (from left to right).`, `Multiply each digit by its place value and add: $${ds.split("").map((d, i) => `${d} \\times ${base ** (L - 1 - i)}`).join(" + ")} = ${val}$.`] };
+  }, true);
+
+  const TV_POS = ["UR", "UL", "LL", "LR"];
+  const TV_NAME = { corr: "corresponding angles", alt: "alternate interior angles", coint: "co-interior angles", vert: "vertically opposite angles", lin: "a linear pair" };
+  add("transversal", "lines-angles", "Parallel lines and a transversal", () => {
+    const a = 5 * ri(8, 17), rel = pick(["corr", "alt", "coint", "vert", "lin"]);
+    let pos = pick(TV_POS), pos2, at2 = true, x = a;
+    if (rel === "corr") pos2 = pos;
+    else if (rel === "alt" || rel === "coint") { pos = pick(["LL", "LR"]); pos2 = rel === "alt" ? (pos === "LL" ? "UR" : "UL") : (pos === "LL" ? "UL" : "UR"); if (rel === "coint") x = 180 - a; }
+    else if (rel === "vert") { pos2 = TV_POS[(TV_POS.indexOf(pos) + 2) % 4]; at2 = false; }
+    else { pos2 = TV_POS[(TV_POS.indexOf(pos) + pick([1, 3])) % 4]; at2 = false; x = 180 - a; }
+    return { viz: { t: "transv", a, pos, pos2, at2, rel, x }, fig: true, q: `Lines $l$ and $m$ are parallel and a transversal crosses them. One angle is $${a}^\\circ$. Find the angle marked $x$.`, ans: [x], show: M(`${x}^\\circ`), unit: "°", wrong: [180 - x, 90 - x, x / 2, 360 - x], how: [`The two angles are ${TV_NAME[rel]}.`, rel === "coint" || rel === "lin" ? `They add up to $180^\\circ$, so $x = 180^\\circ - ${a}^\\circ = ${x}^\\circ$.` : `They are equal, so $x = ${x}^\\circ$.`] };
+  }, true);
+
+  const ROT = [["square", 4, 4], ["equilateral triangle", 3, 3], ["regular pentagon", 5, 5], ["regular hexagon", 6, 6], ["rectangle (not a square)", 2, 4], ["parallelogram (not a rectangle)", 2, 4], ["regular octagon", 8, 8]];
+  add("rot-sym", "symmetry", "Rotational symmetry", () => {
+    const [name, n, sides] = pick(ROT), viz = { t: "rotsym", n, name, sides };
+    if (Math.random() < 0.6) return { viz, q: `What is the order of rotational symmetry of a ${name}?`, ans: [n], show: M(n), wrong: [n + 1, n - 1, 2 * n, sides === n ? 1 : sides], how: [`Turn the shape about its centre and count how many times it looks exactly the same in one full turn.`, `A ${name} matches itself ${n} times, so the order is ${n}.`] };
+    return { viz, q: `What is the smallest angle you can turn a ${name} about its centre so that it looks exactly the same?`, ans: [360 / n], show: M(`${360 / n}^\\circ`), unit: "°", wrong: [180 / n, 360, 360 / (n + 1), 90].filter((v) => v !== 360 / n), how: [`It has rotational symmetry of order ${n}.`, `Smallest angle $= \\frac{360^\\circ}{${n}} = ${360 / n}^\\circ$.`] };
+  }, true);
+
+  const CONSTR = [60, 30, 90, 45, 120, 15, 75, 105, 135, 150, 22.5];
+  add("bisect", "constructions", "Angle bisector constructions", () => {
+    if (Math.random() < 0.5) {
+      const a = 10 * ri(4, 15);
+      return { viz: { t: "bisect", a }, q: `You bisect a $${a}^\\circ$ angle using a compass and ruler. What is the size of each new angle?`, ans: [a / 2], show: M(`${a / 2}^\\circ`), unit: "°", dec: true, wrong: [a, a * 2, 180 - a, a / 4], how: [`Bisect means cut into two equal parts.`, `$\\frac{${a}^\\circ}{2} = ${a / 2}^\\circ$.`] };
+    }
+    const good = pick(CONSTR.filter((v) => v !== 22.5)), bad = sample([50, 35, 70, 25, 40, 80, 100, 110, 65], 3);
+    const root = good % 60 === 0 ? `It is a multiple of $60^\\circ$: copy the $60^\\circ$ arc ${good / 60} time${good === 60 ? "" : "s"}.` : good === 90 ? `$90^\\circ$ is half of $180^\\circ$ (a straight line): bisect the straight angle.` : good === 45 ? `$45^\\circ$ is half of $90^\\circ$.` : good === 30 ? `$30^\\circ$ is half of $60^\\circ$.` : good === 15 ? `$15^\\circ$ is half of $30^\\circ$, which is half of $60^\\circ$.` : good === 75 ? `$75^\\circ = 60^\\circ + 15^\\circ$.` : good === 105 ? `$105^\\circ = 90^\\circ + 15^\\circ$.` : good === 135 ? `$135^\\circ = 90^\\circ + 45^\\circ$.` : `$150^\\circ = 120^\\circ + 30^\\circ$.`;
+    return { viz: { t: "steps", lines: [[`60^\\circ`, `With a compass and ruler you can make $60^\\circ$ (an equilateral triangle) and $180^\\circ$ (a straight line).`], [`\\div 2`, `Bisecting halves an angle, and you can add or subtract angles you can already make.`], [`${good}^\\circ`, root]] }, q: `Which of these angles can be constructed with only a compass and ruler?`, opts: [M(`${good}^\\circ`), ...bad.map((b) => M(`${b}^\\circ`))], how: [`You can make $60^\\circ$ and $180^\\circ$ directly, then bisect, add or subtract.`, root, `Angles like ${bad.slice(0, 3).map((b) => `$${b}^\\circ$`).join(", ")} cannot be made this way.`] };
   });
 
   add("rationals", "rationals", "Rational numbers", () => {
@@ -1115,6 +1216,111 @@
     ] };
   });
 
+  const AXIOMS = [
+    "Things which are equal to the same thing are equal to one another.",
+    "If equals are added to equals, the wholes are equal.",
+    "If equals are subtracted from equals, the remainders are equal.",
+    "Things which coincide with one another are equal to one another.",
+    "The whole is greater than the part.",
+    "Things which are double of the same things are equal to one another.",
+  ];
+  const POSTULATES = [
+    "A straight line may be drawn from any one point to any other point.",
+    "A terminated line can be produced indefinitely.",
+    "A circle can be drawn with any centre and any radius.",
+    "All right angles are equal to one another.",
+    "If a straight line falling on two straight lines makes the interior angles on the same side add up to less than two right angles, the two lines, if produced, meet on that side.",
+  ];
+  add("euclid-ax", "euclid", "Euclid's axioms and postulates", () => {
+    const isAx = Math.random() < 0.5;
+    if (!isAx && Math.random() < 0.5) {
+      const i = ri(0, 4);
+      return { viz: { t: "steps", lines: [[`\\text{Postulate } ${i + 1}`, POSTULATES[i]]] }, q: `Which of Euclid's postulates says: "${POSTULATES[i]}"`, opts: [`Postulate ${i + 1}`, ...[0, 1, 2, 3, 4].filter((j) => j !== i).map((j) => `Postulate ${j + 1}`)], how: [`Euclid's five postulates, in order: 1 line through two points, 2 extend a line, 3 draw a circle, 4 right angles are equal, 5 the parallel postulate.`, `This one is Postulate ${i + 1}.`] };
+    }
+    const st = isAx ? pick(AXIOMS) : pick(POSTULATES), ans = isAx ? 0 : 1;
+    const items = [["Axiom (common notion)", "Axioms are general truths used all through maths, not only in geometry.", isAx ? "✓" : ""], ["Postulate", "Postulates are assumptions made specially for geometry: points, lines, circles.", isAx ? "" : "✓"]];
+    return { viz: { t: "cards", intro: `"${st}"`, items, ans }, q: `In Euclid's system, is this an axiom or a postulate? "${st}"`, opts: isAx ? ["An axiom (common notion)", "A postulate"] : ["A postulate", "An axiom (common notion)"], how: [`Axioms (common notions) are about quantities in general; postulates are about geometric figures.`, isAx ? `This statement is about equal things in general, so it is an axiom.` : `This statement is about lines, circles or angles, so it is a postulate.`] };
+  });
+
+  const CONV = [
+    ["a number is divisible by 4", "it is even", "a number is even", "it is divisible by 4", "a number is not divisible by 4", "it is not even", false, "6 is even but is not divisible by 4."],
+    ["a triangle is equilateral", "all its angles are 60°", "all the angles of a triangle are 60°", "it is equilateral", "a triangle is not equilateral", "not all its angles are 60°", true, "If all three angles are 60°, all three sides are equal too."],
+    ["two angles are vertically opposite", "they are equal", "two angles are equal", "they are vertically opposite", "two angles are not vertically opposite", "they are not equal", false, "Two equal angles need not be vertically opposite: think of two separate 40° angles."],
+    ["a quadrilateral is a square", "its diagonals are equal", "the diagonals of a quadrilateral are equal", "it is a square", "a quadrilateral is not a square", "its diagonals are not equal", false, "A rectangle has equal diagonals but need not be a square."],
+    ["a triangle has a right angle", "the square on its longest side equals the sum of the squares on the other two", "the square on the longest side of a triangle equals the sum of the squares on the other two", "it has a right angle", "a triangle has no right angle", "the square on its longest side does not equal the sum of the squares on the other two", true, "This is the converse of Pythagoras' theorem, and it is true."],
+    ["x = 3", "x² = 9", "x² = 9", "x = 3", "x ≠ 3", "x² ≠ 9", false, "x could also be −3."],
+    ["a number ends in 0", "it is divisible by 10", "a number is divisible by 10", "it ends in 0", "a number does not end in 0", "it is not divisible by 10", true, "A number divisible by 10 always ends in 0."],
+    ["a quadrilateral is a parallelogram", "its opposite sides are equal", "both pairs of opposite sides of a quadrilateral are equal", "it is a parallelogram", "a quadrilateral is not a parallelogram", "its opposite sides are not equal", true, "A quadrilateral with both pairs of opposite sides equal is a parallelogram."],
+    ["a number is a multiple of 6", "it is a multiple of 3", "a number is a multiple of 3", "it is a multiple of 6", "a number is not a multiple of 6", "it is not a multiple of 3", false, "9 is a multiple of 3 but not of 6."],
+    ["a triangle is isosceles", "two of its angles are equal", "two angles of a triangle are equal", "it is isosceles", "a triangle is not isosceles", "no two of its angles are equal", true, "If two angles of a triangle are equal, the sides opposite them are equal."],
+    ["a shape is a square", "it has four equal sides", "a shape has four equal sides", "it is a square", "a shape is not a square", "it does not have four equal sides", false, "A rhombus has four equal sides but need not be a square."],
+  ];
+  add("converse", "propositions", "Converse of a statement", () => {
+    const [p, q, cq, cp, np, nq, truth, why] = pick(CONV), viz = { t: "logic", p, q, cq, cp, truth, why };
+    if (Math.random() < 0.5) return { viz, q: `What is the converse of: "If ${p}, then ${q}."?`, opts: [`If ${cq}, then ${cp}.`, `If ${np}, then ${nq}.`, `If ${p}, then ${nq}.`], how: [`The converse swaps the "if" part and the "then" part.`, `So the converse is: if ${cq}, then ${cp}.`, `"If ${np}, then ${nq}" is a different statement, the inverse.`] };
+    return { viz, q: `Statement: "If ${p}, then ${q}." Is its converse, "If ${cq}, then ${cp}", true or false?`, opts: truth ? ["True", "False"] : ["False", "True"], how: [`Swap the parts and test the new statement.`, why, `So the converse is ${truth ? "true" : "false"}.`] };
+  });
+  add("euclid-alg", "algorithms", "Euclid's division algorithm", () => {
+    const g = ri(2, 15);
+    let p, q;
+    do { p = ri(3, 25); q = ri(2, 20); } while (E.gcd(p, q) !== 1 || p <= q);
+    let a = g * p, b = g * q;
+    const lines = [];
+    while (b) { const qq = Math.floor(a / b), r = a % b; lines.push([`${a} = ${b} \\times ${qq} + ${r}`, r ? `The remainder is ${r}, not 0: divide ${b} by ${r} next.` : `The remainder is 0, so the HCF is the last divisor, ${b}.`]); [a, b] = [b, r]; }
+    return { viz: { t: "steps", lines, intro: [`\\text{HCF}(${g * p}, ${g * q})`, `Divide the bigger number by the smaller, then the divisor by the remainder, until the remainder is 0.`] }, q: `Use Euclid's division algorithm to find the HCF of ${g * p} and ${g * q}.`, ans: [g], show: M(g), wrong: [g * q, g * p - g * q, 2 * g, 1, g * p * q], how: lines.map(([l, c]) => `$${l}$. ${c}`) };
+  }, true);
+
+  add("collatz", "algorithms", "The Collatz rule", () => {
+    let n, seq;
+    do { n = ri(3, 40); seq = [n]; while (seq[seq.length - 1] !== 1) { const v = seq[seq.length - 1]; seq.push(v % 2 ? 3 * v + 1 : v / 2); } } while (seq.length > 21);
+    if (Math.random() < 0.4) {
+      const i = ri(0, Math.min(4, seq.length - 3));
+      return { viz: { t: "collatz", seq }, q: `Collatz rule: if a number is even, halve it; if it is odd, multiply by 3 and add 1. Starting from ${n}, what is the number after ${i + 1} step${i ? "s" : ""}?`, ans: [seq[i + 1]], show: M(seq[i + 1]), wrong: [seq[i], seq[i + 2], seq[i] % 2 ? seq[i] / 2 : 3 * seq[i] + 1].filter(Number.isInteger), how: [`Apply the rule ${i + 1} time${i ? "s" : ""}: ${seq.slice(0, i + 2).join(" → ")}.`] };
+    }
+    return { viz: { t: "collatz", seq }, q: `Collatz rule: if a number is even, halve it; if it is odd, multiply by 3 and add 1. Starting from ${n}, how many steps does it take to reach 1?`, ans: [seq.length - 1], show: M(seq.length - 1), wrong: [seq.length, seq.length - 2, seq.length + 1], how: [`Keep applying the rule: ${seq.join(" → ")}.`, `Count the arrows: ${seq.length - 1} steps.`] };
+  });
+
+  const CHORDS = [[3, 4, 5], [4, 3, 5], [6, 8, 10], [8, 6, 10], [5, 12, 13], [12, 5, 13], [8, 15, 17], [15, 8, 17], [9, 12, 15], [12, 9, 15], [7, 24, 25], [24, 7, 25]];
+  add("chord", "circles", "Chords and the centre", () => {
+    const [half, d, r] = pick(CHORDS), find = pick(["r", "d", "chord"]), viz = { t: "chord", r, half, d, find };
+    const how0 = `The perpendicular from the centre bisects the chord, so the radius, half the chord and the distance make a right-angled triangle.`;
+    if (find === "chord") return { viz, q: `A circle has radius ${r} cm. A chord is ${d} cm from the centre. How long is the chord?`, ans: [2 * half], unit: " cm", wrong: [half, r - d, 2 * (r - d), r + d], how: [how0, `Half the chord $= \\sqrt{${r}^2 - ${d}^2} = \\sqrt{${r * r - d * d}} = ${half}$ cm.`, `Chord $= 2 \\times ${half} = ${2 * half}$ cm.`] };
+    if (find === "d") return { viz, q: `A chord of length ${2 * half} cm is drawn in a circle of radius ${r} cm. How far is the chord from the centre?`, ans: [d], unit: " cm", wrong: [r - half, Math.round(Math.sqrt(r * r + 4 * half * half)), r - 2 * half, half], how: [how0, `Half the chord is ${half} cm.`, `Distance $= \\sqrt{${r}^2 - ${half}^2} = \\sqrt{${r * r - half * half}} = ${d}$ cm.`] };
+    return { viz, q: `A chord of length ${2 * half} cm is ${d} cm from the centre of a circle. Find the radius.`, ans: [r], unit: " cm", wrong: [half + d, 2 * half + d, Math.round(Math.sqrt(4 * half * half + d * d)), r + 1], how: [how0, `Half the chord is ${half} cm.`, `$r = \\sqrt{${half}^2 + ${d}^2} = \\sqrt{${half * half + d * d}} = ${r}$ cm.`] };
+  });
+
+  const HERON = [[13, 14, 15], [5, 5, 6], [5, 5, 8], [6, 8, 10], [9, 10, 17], [10, 13, 13], [7, 15, 20], [13, 20, 21], [10, 17, 21], [11, 13, 20], [5, 12, 13], [9, 12, 15], [8, 15, 17], [6, 25, 29]];
+  add("heron", "mensuration-2d", "Heron's formula", () => {
+    const k = pick([1, 1, 2]), [a, b, c] = pick(HERON).map((v) => v * k), s = (a + b + c) / 2, pr = s * (s - a) * (s - b) * (s - c), A = Math.round(Math.sqrt(pr));
+    const lines = [[`s = \\frac{${a} + ${b} + ${c}}{2} = ${s}`, `First find the semi-perimeter $s$: half the perimeter.`], [`A = \\sqrt{s(s-a)(s-b)(s-c)}`, `Heron's formula needs only the three sides.`], [`A = \\sqrt{${s} \\times ${s - a} \\times ${s - b} \\times ${s - c}} = \\sqrt{${pr}}`, `Put in the numbers.`], [`A = ${A}\\ \\text{cm}^2`, `Take the square root.`]];
+    return { viz: { t: "steps", lines }, q: `Use Heron's formula to find the area of a triangle with sides ${a} cm, ${b} cm and ${c} cm.`, ans: [A], unit: " cm²", wrong: [2 * A, A / 2, s * 2, a * b / 2, A + s], how: lines.map(([l, c2]) => `${c2} $${l}$`) };
+  });
+
+  add("bpt", "triangles", "Basic proportionality theorem", () => {
+    let p, q;
+    do { p = ri(1, 5); q = ri(1, 5); } while (E.gcd(p, q) !== 1 || p === q);
+    const u = ri(1, 3), w = ri(1, 4), ad = p * u, db = q * u, ae = p * w, ec = q * w;
+    return { viz: { t: "bpt", ad, db, ae, ec }, fig: true, q: `In triangle ABC, D lies on AB and E lies on AC, with DE ∥ BC. If AD = ${ad} cm, DB = ${db} cm and AE = ${ae} cm, find EC.`, ans: [ec], unit: " cm", wrong: [(ae * ad) / db, ae + db - ad, db, ae * db], how: [`DE ∥ BC, so by the basic proportionality theorem $\\frac{AD}{DB} = \\frac{AE}{EC}$.`, `$\\frac{${ad}}{${db}} = \\frac{${ae}}{EC}$, so $EC = \\frac{${ae} \\times ${db}}{${ad}} = ${ec}$ cm.`] };
+  });
+
+  const gHead = (lo, h, n) => Array.from({ length: n }, (_, i) => `${lo + i * h}\\text{–}${lo + (i + 1) * h}`).join(" & ");
+  add("grouped-mode", "statistics-grouped", "Mode of grouped data", () => {
+    const lo = pick([0, 10, 20]), h = pick([5, 10]);
+    let f, m;
+    do { f = [0, 1, 2, 3, 4].map(() => ri(2, 12)); m = f.indexOf(Math.max(...f)); } while (m === 0 || m === 4 || f.filter((v) => v === f[m]).length > 1);
+    const l = lo + m * h, f0 = f[m - 1], f1 = f[m], f2_ = f[m + 1], v = l + ((f1 - f0) / (2 * f1 - f0 - f2_)) * h;
+    return { viz: { t: "gtable", lo, h, f, kind: "mode" }, q: `Find the mode of this grouped data (to 2 decimal places if needed): $\\begin{array}{c|ccccc} \\text{Class} & ${gHead(lo, h, 5)} \\\\ \\hline f & ${f.join(" & ")} \\end{array}$`, ans: [+v.toFixed(2)], dec: true, wrong: [l, l + h / 2, l + h, lo + (f.indexOf(Math.min(...f)) + 0.5) * h], how: [`The modal class has the highest frequency: ${l}–${l + h} ($f_1 = ${f1}$, $f_0 = ${f0}$, $f_2 = ${f2_}$, $h = ${h}$).`, `Mode $= l + \\frac{f_1 - f_0}{2f_1 - f_0 - f_2} \\times h = ${l} + \\frac{${f1 - f0}}{${2 * f1 - f0 - f2_}} \\times ${h} = ${f2(v)}$`] };
+  });
+
+  add("grouped-median", "statistics-grouped", "Median of grouped data", () => {
+    const lo = pick([0, 10, 20]), h = pick([5, 10]);
+    let f, n;
+    do { f = [0, 1, 2, 3, 4].map(() => ri(2, 12)); n = f.reduce((s, x) => s + x, 0); } while (n % 2);
+    let cf = 0;
+    const cfs = f.map((x) => (cf += x)), m = cfs.findIndex((c) => c >= n / 2), l = lo + m * h, c0 = m ? cfs[m - 1] : 0, v = l + ((n / 2 - c0) / f[m]) * h;
+    return { viz: { t: "gtable", lo, h, f, kind: "median" }, q: `Find the median of this grouped data (to 2 decimal places if needed): $\\begin{array}{c|ccccc} \\text{Class} & ${gHead(lo, h, 5)} \\\\ \\hline f & ${f.join(" & ")} \\end{array}$`, ans: [+v.toFixed(2)], dec: true, wrong: [l, l + h / 2, l + h, +(l + (n / 2 / f[m]) * h).toFixed(2)], how: [`Cumulative frequencies: ${cfs.join(", ")}. $n = ${n}$, so $\\frac{n}{2} = ${n / 2}$.`, `The median class is the first with cf $\\ge ${n / 2}$: ${l}–${l + h}.`, `Median $= l + \\frac{\\frac{n}{2} - cf}{f} \\times h = ${l} + \\frac{${n / 2} - ${c0}}{${f[m]}} \\times ${h} = ${f2(v)}$`] };
+  });
+
   /* ================= Senior secondary ================= */
   add("sets", "sets", "Union of sets", () => {
     const A = ri(20, 60), B = ri(15, 50), both = ri(3, Math.min(A, B) - 2);
@@ -1494,6 +1700,117 @@
         ];
       })(),
     };
+  });
+
+  const yline = (m, c) => M(`y = ${terms([[m, "x"], [c, ""]])}`);
+  add("line-eq", "lines-conics", "Equation of a line", () => {
+    const m = nz(-3, 3), x1 = ri(-4, 4), y1 = ri(-4, 4), dx = ri(1, 3), x2 = x1 + dx, y2 = y1 + m * dx, c = y1 - m * x1;
+    return { viz: { t: "lineeq", x1, y1, x2, y2 }, q: `Find the equation of the line through $(${x1}, ${y1})$ and $(${x2}, ${y2})$.`, opts: [yline(m, c), yline(-m, y1 + m * x1), yline(m, y1 + m * x1), yline(m, -c), yline(m + 1, c), yline(m, c + 1)], how: [`Slope $m = \\frac{${y2} - ${par(y1)}}{${x2} - ${par(x1)}} = ${m}$.`, `Put $(${x1}, ${y1})$ into $y = mx + c$: $${y1} = ${m} \\times ${par(x1)} + c$, so $c = ${c}$.`, `The line is $y = ${terms([[m, "x"], [c, ""]])}$.`] };
+  });
+
+  add("circle-eq", "lines-conics", "Circle from its equation", () => {
+    const h = nz(-5, 5), k = nz(-5, 5), r = ri(1, 6), D = -2 * h, Eq = -2 * k, F = h * h + k * k - r * r;
+    const lhs = terms([[1, "x^2"], [1, "y^2"], [D, "x"], [Eq, "y"], [F, ""]]);
+    const o = (a, b, rr) => `centre $(${a}, ${b})$, radius $${rr}$`;
+    return { viz: { t: "conic", kind: "circle", h, k, r }, q: `Find the centre and radius of the circle $${lhs} = 0$.`, opts: [o(h, k, r), o(-h, -k, r), o(h, k, r * r), o(D, Eq, r), o(k, h, r)], how: [`Complete the square: $x^2 ${D < 0 ? "-" : "+"} ${Math.abs(D)}x = (x ${h < 0 ? "+" : "-"} ${Math.abs(h)})^2 - ${h * h}$ and $y^2 ${Eq < 0 ? "-" : "+"} ${Math.abs(Eq)}y = (y ${k < 0 ? "+" : "-"} ${Math.abs(k)})^2 - ${k * k}$.`, `So $(x ${h < 0 ? "+" : "-"} ${Math.abs(h)})^2 + (y ${k < 0 ? "+" : "-"} ${Math.abs(k)})^2 = ${h * h} + ${k * k} ${F < 0 ? "+" : "-"} ${Math.abs(F)} = ${r * r}$.`, `Centre $(${h}, ${k})$, radius $\\sqrt{${r * r}} = ${r}$.`] };
+  });
+
+  add("parabola", "lines-conics", "Focus and directrix", () => {
+    const a = ri(1, 5), viz = { t: "conic", kind: "parabola", a };
+    if (Math.random() < 0.5) return { viz, q: `Find the focus of the parabola $y^2 = ${4 * a}x$.`, opts: [M(`(${a}, 0)`), M(`(${4 * a}, 0)`), M(`(0, ${a})`), M(`(-${a}, 0)`), M(`(${2 * a}, 0)`)], how: [`Compare with $y^2 = 4ax$: $4a = ${4 * a}$, so $a = ${a}$.`, `The focus of $y^2 = 4ax$ is $(a, 0) = (${a}, 0)$.`] };
+    return { viz, q: `Find the directrix of the parabola $y^2 = ${4 * a}x$.`, opts: [M(`x = -${a}`), M(`x = ${a}`), M(`y = -${a}`), M(`x = -${4 * a}`)], how: [`Compare with $y^2 = 4ax$: $a = ${a}$.`, `The directrix of $y^2 = 4ax$ is the line $x = -a$, so $x = -${a}$.`] };
+  });
+
+  const T3 = [[1, 2, 2], [2, 3, 6], [1, 4, 8], [2, 6, 9], [4, 4, 7], [3, 4, 12], [2, 10, 11], [6, 6, 7], [4, 8, 8]];
+  add("dist3d", "vectors", "Distance in 3D", () => {
+    const d = shuffle(pick(T3).slice()).map((v) => v * sgn()), P = [ri(-3, 3), ri(-3, 3), ri(-3, 3)], Q = P.map((v, i) => v + d[i]), D = Math.round(Math.hypot(...d));
+    const lines = [[`(${d.map((v) => v).join(", ")})`, `Subtract the coordinates: $(${Q.map((v, i) => `${v} - ${par(P[i])}`).join(",\\ ")})$.`], [`${d.map((v) => `${par(v)}^2`).join(" + ")} = ${D * D}`, `Square each difference and add.`], [`\\sqrt{${D * D}} = ${D}`, `Take the square root.`]];
+    return { viz: { t: "steps", lines, intro: [`PQ = \\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2 + (z_2 - z_1)^2}`, `Use the distance formula in three dimensions.`] }, q: `Find the distance between $P(${P.join(", ")})$ and $Q(${Q.join(", ")})$.`, ans: [D], show: M(D), wrong: [D * D, d.reduce((s, v) => s + Math.abs(v), 0), D + 1, Math.round(Math.hypot(d[0], d[1]))], how: lines.map(([l, c]) => `${c} $${l}$`) };
+  });
+
+  const nmx = (x) => E.fmt(+x.toFixed(3));
+  add("variance", "dispersion", "Variance and standard deviation", () => {
+    const ask = Math.random() < 0.5 ? "var" : "sd";
+    let vals, ss, n;
+    for (let t = 0; t < 500; t++) {
+      n = ri(4, 5);
+      const mu = ri(4, 12), dev = Array.from({ length: n - 1 }, () => ri(-5, 5));
+      dev.push(-dev.reduce((s, v) => s + v, 0));
+      if (Math.abs(dev[n - 1]) > 6) continue;
+      vals = dev.map((v) => mu + v);
+      ss = dev.reduce((s, v) => s + v * v, 0);
+      if (!ss) continue;
+      if (ask === "var" || Number.isInteger(Math.sqrt(ss / n))) break;
+    }
+    const V = ss / n, sd = Math.sqrt(V), ok = Number.isInteger(sd);
+    const A = ask === "sd" && ok ? sd : V, mu = vals.reduce((s, v) => s + v, 0) / n;
+    const q = `Find the ${ask === "sd" && ok ? "standard deviation" : "variance"} of: ${vals.join(", ")}.`;
+    return { viz: { t: "variance", vals, ask: ask === "sd" && ok ? "sd" : "var" }, q, ans: [A], show: M(nmx(A)), dec: !Number.isInteger(A), wrong: ask === "sd" && ok ? [V, sd + 1, ss, ss / (n - 1)] : [ss, sd, ss / (n - 1), V + 1], how: [`Mean: $\\bar x = ${mu}$.`, `Deviations $x - \\bar x$: ${vals.map((v) => v - mu).join(", ")}. Their squares add to ${ss}.`, `Variance $\\sigma^2 = \\frac{${ss}}{${n}} = ${nmx(V)}$${ask === "sd" && ok ? `; standard deviation $\\sigma = \\sqrt{${V}} = ${sd}$` : ""}.`] };
+  });
+
+  add("cont-k", "continuity", "Continuity: find k", () => {
+    const a = ri(-2, 3), m1 = nz(-3, 3);
+    let m2;
+    do m2 = nz(-3, 3); while (m2 === m1);
+    const c1 = ri(-5, 5), k = m1 * a + c1 - m2 * a;
+    const L = terms([[m1, "x"], [c1, ""]]), Rr = `${terms([[m2, "x"]])} + k`;
+    return { viz: { t: "contk", a, m1, c1, m2, k }, q: `For what value of $k$ is $f(x) = \\begin{cases} ${L}, & x \\le ${a} \\\\ ${Rr}, & x > ${a} \\end{cases}$ continuous at $x = ${a}$?`, ans: [k], show: M(k), min: -Infinity, wrong: [m1 * a + c1, -k, c1 - m2, k + m2], how: [`Continuous at $x = ${a}$ means both pieces give the same value there.`, `Left: $${m1} \\times ${par(a)} ${c1 < 0 ? "-" : "+"} ${Math.abs(c1)} = ${m1 * a + c1}$. Right: $${m2} \\times ${par(a)} + k = ${m2 * a} + k$.`, `So $${m2 * a} + k = ${m1 * a + c1}$, giving $k = ${k}$.`] };
+  }, true);
+
+  add("chain-rule", "continuity", "The chain rule", () => {
+    if (Math.random() < 0.55) {
+      const a = ri(2, 5), b = nz(-5, 5), n = ri(2, 6), u = `(${terms([[a, "x"], [b, ""]])})`;
+      const lines = [[`u = ${u.slice(1, -1)},\\quad y = u^{${n}}`, `Spot the inside function $u$ and the outside function.`], [`\\frac{dy}{du} = ${n}${pw("u", n - 1)}`, `Differentiate the outside.`], [`\\frac{du}{dx} = ${a}`, `Differentiate the inside.`], [`\\frac{dy}{dx} = ${n} \\times ${a}\\, ${pw(u, n - 1)} = ${n * a}${pw(u, n - 1)}`, `Chain rule: multiply them, $\\frac{dy}{dx} = \\frac{dy}{du} \\cdot \\frac{du}{dx}$.`]];
+      return { viz: { t: "steps", lines }, q: `Differentiate $y = ${u}^{${n}}$.`, opts: [M(`${n * a}${pw(u, n - 1)}`), M(`${n}${pw(u, n - 1)}`), M(`${n * a}${pw(u, n)}`), M(`${a}${pw(u, n - 1)}`), M(`${n * a}x${pw(u, n - 1)}`)], how: lines.map(([l, c]) => `${c} $${l}$`) };
+    }
+    const k = ri(1, 5), fn = pick(["sin", "cos"]), inner = `${k === 1 ? "" : k}x^2`, dk = `${2 * k}x`;
+    const right = fn === "sin" ? `${dk}\\cos(${inner})` : `-${dk}\\sin(${inner})`;
+    const lines = [[`u = ${inner},\\quad y = \\${fn} u`, `Inside: $u = ${inner}$. Outside: $\\${fn}$.`], [`\\frac{dy}{du} = ${fn === "sin" ? "\\cos u" : "-\\sin u"},\\quad \\frac{du}{dx} = ${dk}`, `Differentiate each part.`], [`\\frac{dy}{dx} = ${right}`, `Multiply them.`]];
+    return { viz: { t: "steps", lines }, q: `Differentiate $y = \\${fn}(${inner})$.`, opts: [M(right), M(fn === "sin" ? `\\cos(${inner})` : `-\\sin(${inner})`), M(fn === "sin" ? `-${dk}\\cos(${inner})` : `${dk}\\sin(${inner})`), M(fn === "sin" ? `${dk}\\cos(${dk})` : `-${dk}\\sin(${dk})`), M(fn === "sin" ? `\\cos(${dk})` : `-\\sin(${dk})`)], how: lines.map(([l, c]) => `${c} $${l}$`) };
+  });
+
+  add("area-curve", "app-integrals", "Area under a curve", () => {
+    const al = ri(1, 2), be = ri(0, 2), c = ri(0, 4), k = ri(1, 3), A = al * k ** 3 + be * k * k + c * k, g = 3 * al * k * k + 2 * be * k + c;
+    const curve = terms([[3 * al, "x^2"], [2 * be, "x"], [c, ""]]);
+    return { viz: { t: "integral", al, be, c, k }, q: `Find the area of the region bounded by the curve $y = ${curve}$, the $x$-axis and the lines $x = 0$ and $x = ${k}$.`, ans: [A], unit: " square units", wrong: [g, 3 * al * k ** 3 + 2 * be * k * k + c * k, A + c, k * g], how: [`The curve is above the $x$-axis here, so area $= \\int_0^{${k}} (${curve})\\,dx$.`, `An antiderivative is $F(x) = ${terms([[al, "x^3"], [be, "x^2"], [c, "x"]])}$.`, `Area $= F(${k}) - F(0) = ${A}$ square units.`] };
+  });
+
+  add("functions", "sets", "Functions and relations", () => {
+    if (Math.random() < 0.55) {
+      const a = nz(-3, 4), b = ri(-5, 5), c = nz(-3, 3), t = ri(-3, 3), sq = Math.random() < 0.5;
+      const fS = terms([[a, "x"], [b, ""]]), gS = sq ? terms([[1, "x^2"], [c, ""]]) : terms([[c, "x"], [b + 1, ""]]);
+      const f = (x) => a * x + b, g = (x) => (sq ? x * x + c : c * x + b + 1), v = f(g(t));
+      return { viz: { t: "steps", lines: [[`g(${t}) = ${g(t)}`, `Work from the inside: first find $g(${t})$.`], [`f(${g(t)}) = ${v}`, `Then put that into $f$.`], [`(f \\circ g)(${t}) = ${v}`, `$(f \\circ g)(x)$ means $f(g(x))$.`]] }, q: `If $f(x) = ${fS}$ and $g(x) = ${gS}$, find $(f \\circ g)(${t})$.`, ans: [v], show: M(v), min: -Infinity, wrong: [g(f(t)), f(t) * g(t), f(t) + g(t), g(t)], how: [`$g(${t}) = ${g(t)}$.`, `$f(${g(t)}) = ${a} \\times ${par(g(t))} ${b < 0 ? "-" : "+"} ${Math.abs(b)} = ${v}$.`] };
+    }
+    const m = ri(2, 3), n = ri(2, 3), rel = Math.random() < 0.5, v = rel ? 2 ** (m * n) : n ** m;
+    return { viz: { t: "steps", lines: [[`|A \\times B| = ${m} \\times ${n} = ${m * n}`, `A × B has ${m * n} ordered pairs.`], rel ? [`2^{${m * n}} = ${v}`, `A relation is any subset of A × B: each pair is either in or out.`] : [`${n}^{${m}} = ${v}`, `A function sends each of the ${m} elements of A to one of the ${n} elements of B.`]] }, q: `Set A has ${m} elements and set B has ${n} elements. How many ${rel ? "relations" : "functions"} from A to B are there?`, ans: [v], show: M(v), wrong: [m * n, rel ? n ** m : 2 ** (m * n), m ** n, 2 ** (m + n)], how: rel ? [`$A \\times B$ has $${m} \\times ${n} = ${m * n}$ pairs.`, `Every subset is a relation: $2^{${m * n}} = ${v}$.`] : [`Each of the ${m} elements of A has ${n} choices.`, `$${n}^{${m}} = ${v}$ functions.`] };
+  });
+
+  add("am-gm", "sequences", "AM and GM", () => {
+    if (Math.random() < 0.5) {
+      let p, q;
+      do { p = ri(1, 6); q = ri(1, 6); } while (p === q);
+      const t = pick([1, 2, 3]), a = p * p * t, b = q * q * t, G_ = p * q * t;
+      return { viz: { t: "steps", lines: [[`\\sqrt{${a} \\times ${b}} = \\sqrt{${a * b}} = ${G_}`, `The geometric mean of two numbers is the square root of their product.`], [`\\text{AM} = \\frac{${a} + ${b}}{2} = ${(a + b) / 2} \\ge ${G_}`, `Check: AM ≥ GM always holds for positive numbers.`]] }, q: `Find the geometric mean (GM) of ${a} and ${b}.`, ans: [G_], show: M(G_), wrong: [(a + b) / 2, a * b, Math.abs(b - a), G_ * 2], how: [`GM $= \\sqrt{ab} = \\sqrt{${a} \\times ${b}} = \\sqrt{${a * b}} = ${G_}$.`] };
+    }
+    const s = ri(2, 9), k = s * s;
+    return { viz: { t: "steps", lines: [[`\\frac{x + \\frac{${k}}{x}}{2} \\ge \\sqrt{x \\cdot \\frac{${k}}{x}} = ${s}`, `Use AM ≥ GM on the two positive numbers $x$ and $\\frac{${k}}{x}$.`], [`x + \\frac{${k}}{x} \\ge ${2 * s}`, `Multiply by 2.`], [`x = ${s}`, `Equality holds when the two numbers are equal: $x = \\frac{${k}}{x}$.`]] }, q: `For $x > 0$, what is the smallest value of $x + \\frac{${k}}{x}$?`, ans: [2 * s], show: M(2 * s), wrong: [s, k, 2 * k, k + 1], how: [`AM ≥ GM: $\\frac{x + \\frac{${k}}{x}}{2} \\ge \\sqrt{${k}} = ${s}$.`, `So $x + \\frac{${k}}{x} \\ge ${2 * s}$, reached at $x = ${s}$.`] };
+  });
+
+  add("det3", "matrices", "3×3 determinants", () => {
+    const m = Array.from({ length: 3 }, () => Array.from({ length: 3 }, () => ri(-3, 4)));
+    const [[a, b, c], [d, e, f], [g, h, i]] = m;
+    const c1 = e * i - f * h, c2 = d * i - f * g, c3 = d * h - e * g, D = a * c1 - b * c2 + c * c3;
+    const lines = [[`${a}(${par(e)} \\cdot ${par(i)} - ${par(f)} \\cdot ${par(h)}) = ${a} \\times ${par(c1)}`, `Expand along the first row. First entry times its minor.`], [`-${par(b)}(${par(d)} \\cdot ${par(i)} - ${par(f)} \\cdot ${par(g)}) = -${par(b)} \\times ${par(c2)}`, `The middle entry gets a minus sign.`], [`+${par(c)}(${par(d)} \\cdot ${par(h)} - ${par(e)} \\cdot ${par(g)}) = ${par(c)} \\times ${par(c3)}`, `The last entry is added.`], [`${a * c1} ${-b * c2 < 0 ? "-" : "+"} ${Math.abs(b * c2)} ${c * c3 < 0 ? "-" : "+"} ${Math.abs(c * c3)} = ${D}`, `Add up.`]];
+    return { viz: { t: "steps", lines }, q: `Find the determinant $\\begin{vmatrix} ${m.map((r) => r.join(" & ")).join(" \\\\ ")} \\end{vmatrix}$.`, ans: [D], show: M(D), min: -Infinity, wrong: [a * c1 + b * c2 + c * c3, -D, a * e * i + b * f * g + c * d * h, D + 1], how: [`Expand along the first row: $a(ei - fh) - b(di - fg) + c(dh - eg)$.`, `$= ${a} \\times ${par(c1)} - ${par(b)} \\times ${par(c2)} + ${par(c)} \\times ${par(c3)} = ${D}$.`] };
+  });
+
+  add("bayes", "probability-adv", "Bayes' theorem", () => {
+    const p = 10 * ri(3, 7), dA = ri(1, 5);
+    let dB;
+    do dB = ri(1, 5); while (dB === dA);
+    const num = p * dA, den = p * dA + (100 - p) * dB;
+    return { viz: { t: "steps", lines: [[`P(A)P(D \\mid A) = ${p / 100} \\times ${dA / 100}`, `Chance a bulb is from A and defective.`], [`P(B)P(D \\mid B) = ${(100 - p) / 100} \\times ${dB / 100}`, `Chance a bulb is from B and defective.`], [`P(A \\mid D) = \\frac{${num}}{${num} + ${den - num}} = ${frac(num, den)}`, `Bayes: the A part divided by the total chance of a defective bulb.`]] }, q: `Factory A makes ${p}% of a company's bulbs and factory B makes the rest. ${dA}% of A's bulbs and ${dB}% of B's bulbs are defective. A bulb picked at random is defective. What is the probability it came from factory A?`, ans: [num / den], show: M(frac(num, den)), frac: true, max: 1, hint: "A fraction such as 3/7.", wrong: [p / 100, dA / (dA + dB), (den - num) / den, num / 10000].filter((x) => x > 0 && x < 1), how: [`$P(D) = ${p / 100} \\times ${dA / 100} + ${(100 - p) / 100} \\times ${dB / 100}$.`, `$P(A \\mid D) = \\frac{P(A)P(D \\mid A)}{P(D)} = \\frac{${num}}{${den}} = ${frac(num, den)}$.`] };
   });
 
   /* ================= College ================= */

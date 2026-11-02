@@ -64,7 +64,7 @@
 
   function slim(it) {
     const o = {};
-    for (const k of ["skill", "q", "ans", "ordered", "tol", "show", "how", "hint", "choices", "ci", "mcqOnly", "viz"]) if (it[k] !== undefined) o[k] = it[k];
+    for (const k of ["skill", "q", "ans", "ordered", "tol", "show", "how", "hint", "choices", "ci", "mcqOnly", "viz", "fig"]) if (it[k] !== undefined) o[k] = it[k];
     return o;
   }
 
@@ -238,6 +238,7 @@
         <button type="button" data-wk="steps" aria-pressed="${!watch}">${icon("list")} Steps</button>
       </div><div class="wk-v"${watch ? "" : " hidden"}>${v}</div><div class="wk-s"${watch ? " hidden" : ""}>${steps(it.how)}</div></div></details>`;
   }
+  const qfig = (it) => (window.MZV && window.MZV.fig ? window.MZV.fig(it) : "");
   const mountViz = (root) => { if (window.MZV) window.MZV.mount(root); };
   document.addEventListener("toggle", (e) => { const d = e.target; if (d.matches && d.matches("details.working") && d.open) mountViz(d); }, true);
   document.addEventListener("click", (e) => {
@@ -302,7 +303,7 @@
       const typing = cfg.answer === "type" && !it.mcqOnly;
       main.innerHTML = `<div class="q-wrap">
         <div class="q-tag" style="--c:${lv.color}">${icon(lv.icon)}<span>${esc(cfg.tag ? cfg.tag(st, s) : s.name)}</span>${cfg.total ? `<em>${st.i + 1} of ${cfg.total}</em>` : ""}</div>
-        <div class="q-text">${rich(it.q)}</div>
+        <div class="q-text">${rich(it.q)}</div>${qfig(it)}
         ${typing
           ? `<div class="ans-box" id="ansBox"><span id="ansTxt" aria-live="polite"></span><i class="caret" aria-hidden="true"></i></div><p class="q-read" id="qRead">${esc(it.hint || "Use the keypad to type your answer.")}</p>`
           : `<div class="opts" id="opts">${it.choices.map((c, k) => `<button type="button" class="opt" data-k="${k}"><span class="opt-k">${"ABCD"[k]}</span><span class="opt-t">${optTex(c)}</span></button>`).join("")}</div>`}
@@ -503,7 +504,7 @@
       if (window.MZB) window.MZB.setQuestion(it.q);
       main.innerHTML = `<div class="q-wrap">
         <div class="q-tag" style="--c:${lv.color}">${icon(lv.icon)}<span>${esc(TP[s.topic].title)}</span>${flag[cur] ? `<em class="flagged">${icon("flag")} Flagged</em>` : ""}</div>
-        <div class="q-text">${rich(it.q)}</div>
+        <div class="q-text">${rich(it.q)}</div>${qfig(it)}
         <div class="opts">${it.choices.map((c, k) => `<button type="button" class="opt ${sel[cur] === k ? "sel" : ""}" data-k="${k}" aria-pressed="${sel[cur] === k}"><span class="opt-k">${"ABCD"[k]}</span><span class="opt-t">${optTex(c)}</span></button>`).join("")}</div>
         ${sel[cur] >= 0 ? `<button type="button" class="link-btn clear-ans" id="eClear">Clear my answer</button>` : ""}
       </div>`;
@@ -673,7 +674,7 @@
     return `<section class="review">
       <div class="sec-head"><h2>Review answers</h2>${wrong && wrong < log.length ? `<div class="seg sm" id="rvSeg" role="group" aria-label="Filter"><button type="button" data-f="all" aria-pressed="true">All ${log.length}</button><button type="button" data-f="wrong" aria-pressed="false">Wrong ${wrong}</button></div>` : ""}</div>
       <div class="rv-list">${log.map((x, k) => `<article class="rv ${x.ok ? "ok" : "no"}" data-ok="${x.ok ? 1 : 0}">
-        <div class="rv-head"><span class="rv-n">${k + 1}</span><div class="rv-q">${rich(x.it.q)}</div><span class="rv-ic">${icon(x.ok ? "check" : "x")}</span></div>
+        <div class="rv-head"><span class="rv-n">${k + 1}</span><div class="rv-q">${rich(x.it.q)}${qfig(x.it)}</div><span class="rv-ic">${icon(x.ok ? "check" : "x")}</span></div>
         <div class="rv-a">
           ${x.ok ? "" : `<div><small>Your answer</small>${x.givenHtml == null ? `<span class="muted">Not answered</span>` : `<span>${x.givenHtml}</span>`}</div>`}
           <div><small>Correct answer</small><span>${rich(x.it.show)}</span></div>
@@ -1113,7 +1114,7 @@
         <div class="sec-head"><h2>${list.length} saved</h2><button type="button" class="link-btn" id="clear">Clear all</button></div>
         <div class="rv-list">${list.map((m, k) => {
           const s = SK[m.skill];
-          return `<article class="rv no"><div class="rv-head"><span class="rv-n">${icon(s ? LV[s.level].icon : "x")}</span><div class="rv-q"><small class="muted">${esc(s ? s.name : "")}</small>${rich(m.q)}</div><button type="button" class="icon-btn sm" data-del="${k}" aria-label="Remove">${icon("trash")}</button></div>
+          return `<article class="rv no"><div class="rv-head"><span class="rv-n">${icon(s ? LV[s.level].icon : "x")}</span><div class="rv-q"><small class="muted">${esc(s ? s.name : "")}</small>${rich(m.q)}${qfig(m)}</div><button type="button" class="icon-btn sm" data-del="${k}" aria-label="Remove">${icon("trash")}</button></div>
             <div class="rv-a"><div><small>Correct answer</small><span>${rich(m.show)}</span></div></div>
             ${working(m, false)}</article>`;
         }).join("")}</div>`
