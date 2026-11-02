@@ -64,7 +64,7 @@
 
   function slim(it) {
     const o = {};
-    for (const k of ["skill", "q", "ans", "ordered", "tol", "show", "how", "hint", "choices", "ci", "mcqOnly"]) if (it[k] !== undefined) o[k] = it[k];
+    for (const k of ["skill", "q", "ans", "ordered", "tol", "show", "how", "hint", "choices", "ci", "mcqOnly", "viz"]) if (it[k] !== undefined) o[k] = it[k];
     return o;
   }
 
@@ -228,6 +228,28 @@
   /* ---------- Player ---------- */
   const optTex = (c) => rich(String(c).replace(/\$([^$]+)\$/g, (m, t) => `$\\displaystyle ${t}$`));
   const steps = (h) => (Array.isArray(h) ? `<ol class="steps">${h.map((s) => `<li>${rich(s)}</li>`).join("")}</ol>` : `<p>${rich(h || "")}</p>`);
+  function working(it, open) {
+    const v = window.MZV ? window.MZV.html(it) : "";
+    const head = `<details class="working"${open ? " open" : ""}><summary>${icon("bulb")} How to solve it</summary><div>`;
+    if (!v) return `${head}${steps(it.how)}</div></details>`;
+    const watch = store.get("solve-view", "watch") !== "steps";
+    return `${head}<div class="wk-tabs" role="group" aria-label="Solution view">
+        <button type="button" data-wk="watch" aria-pressed="${watch}">${icon("play")} Watch it</button>
+        <button type="button" data-wk="steps" aria-pressed="${!watch}">${icon("list")} Steps</button>
+      </div><div class="wk-v"${watch ? "" : " hidden"}>${v}</div><div class="wk-s"${watch ? " hidden" : ""}>${steps(it.how)}</div></div></details>`;
+  }
+  const mountViz = (root) => { if (window.MZV) window.MZV.mount(root); };
+  document.addEventListener("toggle", (e) => { const d = e.target; if (d.matches && d.matches("details.working") && d.open) mountViz(d); }, true);
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest && e.target.closest("[data-wk]");
+    if (!b) return;
+    const d = b.closest("details"), watch = b.dataset.wk === "watch";
+    store.set("solve-view", watch ? "watch" : "steps");
+    d.querySelectorAll("[data-wk]").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    d.querySelector(".wk-v").hidden = !watch;
+    d.querySelector(".wk-s").hidden = watch;
+    if (watch) mountViz(d);
+  });
   const PRAISE = ["Correct!", "Nice work!", "Spot on!", "Great job!", "You got it!", "Brilliant!", "Exactly right!"];
   const KEYS = ["7", "8", "9", "/", "del", "4", "5", "6", "√", "(", "1", "2", "3", "π", ")", "-", "0", ".", ",", "go"];
   const keyLabel = { del: icon("backspace"), go: "Check", "-": "−", "/": "÷" };
@@ -372,11 +394,11 @@
       sheetEl.innerHTML = `<div class="sheet-in">
         <div class="sheet-head"><span class="sheet-ic">${icon(ok ? "check" : skipped ? "bulb" : "x")}</span><b>${ok ? pick(PRAISE) : skipped ? "Here's the answer" : "Not quite"}</b>${ok ? `<span class="xp-chip">+${cfg.xp} XP</span>` : ""}</div>
         ${ok ? "" : `<p class="sheet-ans"><small>Correct answer</small><span>${rich(it.show)}</span></p>`}
-        <details class="working"${ok ? "" : " open"}><summary>${icon("bulb")} How to solve it</summary><div>${steps(it.how)}</div></details>
+        ${working(it, !ok)}
         <button type="button" class="btn block lg ${ok ? "go-good" : "go-bad"}" id="pNext">${last ? "See results" : "Continue"} ${icon("arrow")}</button>
       </div>`;
       sheetEl.hidden = false;
-      requestAnimationFrame(() => sheetEl.classList.add("up"));
+      requestAnimationFrame(() => { sheetEl.classList.add("up"); mountViz(sheetEl); });
       $("pNext").addEventListener("click", cont);
       $("pNext").focus({ preventScroll: true });
     }
@@ -648,7 +670,7 @@
           ${x.ok ? "" : `<div><small>Your answer</small>${x.givenHtml == null ? `<span class="muted">Not answered</span>` : `<span>${x.givenHtml}</span>`}</div>`}
           <div><small>Correct answer</small><span>${rich(x.it.show)}</span></div>
         </div>
-        <details class="working"><summary>${icon("bulb")} How to solve it</summary><div>${steps(x.it.how)}</div></details>
+        ${working(x.it, false)}
       </article>`).join("")}</div>
     </section>`;
   }
@@ -1083,7 +1105,7 @@
           const s = SK[m.skill];
           return `<article class="rv no"><div class="rv-head"><span class="rv-n">${icon(s ? LV[s.level].icon : "x")}</span><div class="rv-q"><small class="muted">${esc(s ? s.name : "")}</small>${rich(m.q)}</div><button type="button" class="icon-btn sm" data-del="${k}" aria-label="Remove">${icon("trash")}</button></div>
             <div class="rv-a"><div><small>Correct answer</small><span>${rich(m.show)}</span></div></div>
-            <details class="working"><summary>${icon("bulb")} How to solve it</summary><div>${steps(m.how)}</div></details></article>`;
+            ${working(m, false)}</article>`;
         }).join("")}</div>`
       : `<div class="empty-state card"><span class="big-ic">${icon("check")}</span><h2>Nothing to fix</h2><p class="muted">Questions you get wrong in any mode are saved here so you can try them again.</p><a class="btn primary" href="#/quick">${icon("play")} Take a quick quiz</a></div>`}`;
     const go = $("go");
