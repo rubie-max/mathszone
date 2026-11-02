@@ -265,6 +265,7 @@
         <button type="button" class="icon-btn sm" id="pQuit" aria-label="Leave this round">${icon("x")}</button>
         <div class="play-bar" aria-hidden="true"><i id="pBar"></i></div>
         <div class="play-stat" id="pStat" aria-live="polite"></div>
+        <button type="button" class="icon-btn sm" id="pBoard" aria-label="Open whiteboard" title="Whiteboard">${icon("board")}</button>
       </div>
       <div class="play-main" id="pMain"></div>
       <div class="play-foot" id="pFoot"></div>
@@ -272,6 +273,8 @@
     </div>`;
     const main = $("pMain"), foot = $("pFoot"), sheetEl = $("pSheet");
     let tick = null, autoT = null;
+    const boardBtn = $("pBoard");
+    if (boardBtn) boardBtn.addEventListener("click", () => { if (window.MZB) window.MZB.toggle(st.cur ? st.cur.q : ""); });
 
     function paintStat() {
       let h;
@@ -307,6 +310,7 @@
       foot.innerHTML = typing ? keypad() : cfg.instant ? "" : `<button type="button" class="btn ghost sm" id="pSkip">${icon("bulb")} I don't know</button>`;
       foot.classList.toggle("has-pad", typing);
       main.scrollTop = 0;
+      if (window.MZB) window.MZB.setQuestion(it.q);
       if (typing) foot.querySelector(".keypad").addEventListener("click", (e) => { const b = e.target.closest("[data-key]"); if (b) key(b.dataset.key); });
       else $("opts").addEventListener("click", (e) => { const b = e.target.closest(".opt"); if (b) choose(+b.dataset.k); });
       const sk = $("pSkip");
@@ -410,7 +414,7 @@
     }
 
     function onKey(e) {
-      if (st.ended || document.querySelector(".modal")) return;
+      if (st.ended || document.querySelector(".modal") || document.body.classList.contains("wb-open")) return;
       if (e.target.closest && e.target.closest("input, textarea, select")) return;
       if (!sheetEl.hidden) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); cont(); } return; }
       if (st.locked || !st.cur) return;
@@ -440,7 +444,7 @@
       }, 100);
     }
 
-    const stop = () => { st.ended = true; clearInterval(tick); clearTimeout(autoT); document.removeEventListener("keydown", onKey); };
+    const stop = () => { st.ended = true; clearInterval(tick); clearTimeout(autoT); document.removeEventListener("keydown", onKey); if (window.MZB) window.MZB.hide(); };
     U.setTeardown(stop);
 
     $("pQuit").addEventListener("click", async () => {
@@ -478,6 +482,7 @@
         <button type="button" class="icon-btn sm" id="eQuit" aria-label="Leave the test">${icon("x")}</button>
         <div class="exam-title"><b>${esc(cfg.title)}</b><small id="eCount"></small></div>
         <div class="play-stat">${cfg.time ? `<span class="pst" id="eTime">${icon("clock")}<b></b></span>` : ""}</div>
+        <button type="button" class="icon-btn sm" id="eBoard" aria-label="Open whiteboard" title="Whiteboard">${icon("board")}</button>
       </div>
       <div class="play-bar thin" aria-hidden="true"><i id="eBar"></i></div>
       <div class="play-main" id="eMain"></div>
@@ -490,9 +495,12 @@
       <div class="sheet pal-sheet" id="eSheet" hidden></div>
     </div>`;
     const main = $("eMain"), sh = $("eSheet");
+    const eBoardBtn = $("eBoard");
+    if (eBoardBtn) eBoardBtn.addEventListener("click", () => { if (window.MZB) window.MZB.toggle(items[cur] ? items[cur].q : ""); });
 
     function render() {
       const it = items[cur], s = SK[it.skill], lv = LV[s.level];
+      if (window.MZB) window.MZB.setQuestion(it.q);
       main.innerHTML = `<div class="q-wrap">
         <div class="q-tag" style="--c:${lv.color}">${icon(lv.icon)}<span>${esc(TP[s.topic].title)}</span>${flag[cur] ? `<em class="flagged">${icon("flag")} Flagged</em>` : ""}</div>
         <div class="q-text">${rich(it.q)}</div>
@@ -569,7 +577,7 @@
     }
 
     function onKey(e) {
-      if (ended || document.querySelector(".modal")) return;
+      if (ended || document.querySelector(".modal") || document.body.classList.contains("wb-open")) return;
       if (!sh.hidden) { if (e.key === "Escape") closePal(); return; }
       let k = "1234".indexOf(e.key);
       if (k < 0 && e.key.length === 1) k = "abcd".indexOf(e.key.toLowerCase());
@@ -578,7 +586,7 @@
       else if (e.key === "ArrowLeft") go(cur - 1);
     }
     document.addEventListener("keydown", onKey);
-    const stop = () => { ended = true; clearInterval(tick); clearTimeout(autoT); document.removeEventListener("keydown", onKey); };
+    const stop = () => { ended = true; clearInterval(tick); clearTimeout(autoT); document.removeEventListener("keydown", onKey); if (window.MZB) window.MZB.hide(); };
     U.setTeardown(stop);
 
     $("ePrev").addEventListener("click", () => go(cur - 1));
