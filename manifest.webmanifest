@@ -10,8 +10,8 @@
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#f7f7fb",
-  "theme_color": "#6d4aff",
+  "background_color": "#0e0d16",
+  "theme_color": "#0e0d16",
   "categories": ["education"],
   "icons": [
     { "src": "logo.svg", "sizes": "any", "type": "image/svg+xml" },

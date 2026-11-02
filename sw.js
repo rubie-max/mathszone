@@ -1,7 +1,7 @@
 /* MathsZone service worker.
    Shell is precached for offline + installability; everything else (versioned JS/CSS,
    fonts, KaTeX from the CDN) is cached at runtime, so bumping ?v= never desyncs the SW. */
-const VERSION = "mz-2026-11-02b";
+const VERSION = "mz-2026-11-02c";
 const SHELL = "mz-shell-" + VERSION;
 const RUNTIME = "mz-runtime-" + VERSION;
 
