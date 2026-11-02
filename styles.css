@@ -1446,6 +1446,55 @@ body.wb-open { overflow: hidden; }
   .gal-stage-h { font-size: 17px; }
 }
 
+/* ===== Term links, rules, glossary ===== */
+a.term { color: inherit; font-weight: 700; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+a.term:hover { color: var(--accent); }
+.rule-toc { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 16px; }
+.rule-toc button { padding: 6px 12px; border: 1px solid var(--line); border-radius: 99px; font: inherit; font-size: 13px; font-weight: 700; color: var(--ink); background: var(--surface); cursor: pointer; }
+.rule-toc button:hover { color: var(--accent); border-color: var(--accent); }
+.rules { display: grid; gap: 14px; }
+.rule-card { scroll-margin-top: 80px; }
+.rule-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.rule-h h2 { margin: 0; font-size: 18px; }
+.rule-h .term { flex: none; font-size: 13px; }
+.rule-tbl { width: 100%; border-collapse: collapse; }
+.rule-tbl th, .rule-tbl td { padding: 9px 4px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.rule-tbl tr:last-child th, .rule-tbl tr:last-child td { border-bottom: 0; }
+.rule-tbl th { width: 36%; padding-right: 12px; font-weight: 750; }
+.rule-card .ideas { margin: 0; padding-left: 20px; }
+.rule-card .ideas li { margin: 6px 0; }
+.rule-foot { margin: 18px 2px 0; }
+.gl-az { margin: 10px 0 0; }
+.gl-az button { min-width: 34px; padding: 5px 8px; }
+.gl-grp { scroll-margin-top: 80px; }
+.gl-grp h2 { margin: 18px 2px 8px; font-size: 15px; color: var(--muted); }
+.gl { margin: 0; padding: 4px 18px; }
+.gl-row { display: grid; grid-template-columns: minmax(130px, 28%) 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.gl-row:last-child { border-bottom: 0; }
+.gl-row[hidden], .gl-grp[hidden] { display: none; }
+.gl dt { font-weight: 800; }
+.gl dd { margin: 0; line-height: 1.5; }
+.gl-go { margin-left: 4px; font-size: 13px; white-space: nowrap; }
+.foot-links { margin-top: 8px !important; }
+.foot-links a { color: inherit; font-weight: 700; }
+@media (max-width: 560px) {
+  .gl-row { grid-template-columns: 1fr; gap: 2px; }
+  .rule-tbl th { width: 42%; }
+  .tabs-seg a { padding: 8px 6px; font-size: 13px; gap: 4px; }
+  .tabs-seg a .ic { display: none; }
+}
+
+/* NCERT extras in animations */
+.picto { width: min(100%, 440px); }
+.pic { display: inline-flex; flex-wrap: wrap; gap: 2px; font-size: 20px; line-height: 1; }
+.pic i { font-style: normal; }
+.picto .pic-c { text-align: left; }
+.pic-key { margin: 0 0 8px; text-align: center; font-size: 14px; }
+.rom-build { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; font-size: 22px; }
+.rom-build b { color: var(--vk1); }
+.rom-build i { font-style: normal; color: var(--muted); }
+.pgrid .vc { min-width: 40px; }
+
 /* Install (PWA) banner */
 .pwa-banner {
   position: fixed; left: 50%; transform: translateX(-50%);

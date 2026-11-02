@@ -3,10 +3,10 @@
   const R = String.raw;
 
   window.MZ_LEVELS = [
-    { id: "foundation", name: "Foundation", range: "Class 1–5", color: "#f59e0b", icon: "blocks", blurb: "Place value, the four operations, fractions, decimals, measurement and first shapes." },
-    { id: "middle", name: "Middle school", range: "Class 6–8", color: "#10b981", icon: "ruler", blurb: "Integers, HCF and LCM, ratios, percentages, exponents, algebra and mensuration." },
-    { id: "secondary", name: "Secondary", range: "Class 9–10", color: "#3b82f6", icon: "axes", blurb: "Polynomials, quadratics, progressions, coordinate geometry, trigonometry and probability." },
-    { id: "senior", name: "Senior secondary", range: "Class 11–12", color: "#8b5cf6", icon: "integral", blurb: "Functions, complex numbers, counting, calculus, matrices, vectors and distributions." },
+    { id: "foundation", name: "Foundation", range: "Class 1–5", color: "#f59e0b", icon: "blocks", blurb: "Place value, the four operations, fractions, decimals, Roman numerals, shapes, angles and turns, measurement, symmetry and pictographs." },
+    { id: "middle", name: "Middle school", range: "Class 6–8", color: "#10b981", icon: "ruler", blurb: "Integers, primes, HCF and LCM, ratios, percentages, exponents, algebra, lines and angles, congruence, constructions, solids, mensuration and graphs." },
+    { id: "secondary", name: "Secondary", range: "Class 9–10", color: "#3b82f6", icon: "axes", blurb: "Polynomials, quadratics, Euclid, coordinate geometry, trigonometry, areas related to circles and probability." },
+    { id: "senior", name: "Senior secondary", range: "Class 11–12", color: "#8b5cf6", icon: "integral", blurb: "Functions, inverse trig, complex numbers, inequalities, counting, calculus, matrices, vectors and distributions." },
     { id: "college", name: "College and beyond", range: "Undergraduate", color: "#ec4899", icon: "cap", blurb: "Linear algebra, multivariable calculus, series, ODEs, number theory, graphs and statistics." },
   ];
 
@@ -25,6 +25,7 @@
         "The Indian system groups digits as thousands, lakhs and crores: 1,00,00,000 is one crore.",
         "The international system groups digits in threes: 10,000,000 is ten million.",
         "To compare two numbers, count the digits first, then compare digit by digit from the left.",
+        "Class 4–6 also use [[roman|Roman numerals]]: I, V, X, L, C, D and M.",
       ],
       [
         ["Expanded form", R`4372 = 4\times1000 + 3\times100 + 7\times10 + 2`],
@@ -159,6 +160,116 @@
         ans: "60 m and 216 m²",
       }, { skills: ["rect"] }),
 
+    T("roman", "foundation", "Arithmetic", "Roman numerals",
+      "The Roman system uses letters for values: I, V, X, L, C, D and M.",
+      [
+        "I = 1, V = 5, X = 10, L = 50, C = 100, D = 500, M = 1000.",
+        "A smaller letter before a larger one means subtract: IV is 4, IX is 9, XL is 40.",
+        "A smaller letter after a larger one means add: VI is 6, XI is 11, LX is 60.",
+        "Never repeat V, L or D. I, X, C and M can be written up to three times.",
+      ],
+      [
+        ["Letters", R`I=1,\ V=5,\ X=10,\ L=50,\ C=100`],
+        ["Subtractive pairs", R`IV=4,\ IX=9,\ XL=40,\ XC=90,\ CD=400,\ CM=900`],
+      ],
+      {
+        q: "Write 24 and 49 in Roman numerals.",
+        steps: ["24 = 20 + 4 = XX + IV = XXIV.", "49 = 40 + 9 = XL + IX = XLIX."],
+        ans: "XXIV and XLIX",
+      }, { skills: ["roman"] }),
+
+    T("shapes", "foundation", "Geometry", "Shapes and solids",
+      "Count sides, vertices and faces to name a shape.",
+      [
+        "A side is a straight edge; a vertex is a corner where two sides meet.",
+        "A triangle has 3 sides, a quadrilateral 4, a pentagon 5 and a hexagon 6.",
+        "A cube has 6 square faces, 12 edges and 8 vertices.",
+        "Closed shapes that don't cross themselves are polygons if every side is straight.",
+      ],
+      [
+        ["Polygon names", R`3\ \text{triangle},\ 4\ \text{quadrilateral},\ 5\ \text{pentagon},\ 6\ \text{hexagon}`],
+        ["Cube", R`F = 6,\ E = 12,\ V = 8`],
+      ],
+      {
+        q: "A shape has 5 straight sides. What is it called, and how many vertices does it have?",
+        steps: ["Five straight sides: a pentagon.", "A simple polygon has as many vertices as sides, so 5 vertices."],
+        ans: "Pentagon, 5 vertices",
+      }, { skills: ["shapes"] }),
+
+    T("symmetry", "foundation", "Geometry", "Symmetry and patterns",
+      "A line of symmetry folds a shape onto itself; a pattern follows a rule.",
+      [
+        "If you can fold a shape so both halves match, the fold is a line of symmetry.",
+        "A square has 4 lines of symmetry; a rectangle that is not a square has 2; a scalene triangle has none.",
+        "A number pattern adds or multiplies by the same amount each time.",
+        "Look at the gap between terms to find the rule, then use it to find the next term.",
+      ],
+      [
+        ["Lines of symmetry", R`\text{square } 4,\ \text{rectangle } 2,\ \text{equilateral triangle } 3`],
+        ["Arithmetic pattern", R`a,\ a+d,\ a+2d,\ a+3d,\ \ldots`],
+      ],
+      {
+        q: "How many lines of symmetry does a rectangle that is not a square have?",
+        steps: ["The two midlines — one across and one down — fold it onto itself.", "The diagonals do not: the long sides would not land on the short sides.", "So there are 2 lines of symmetry."],
+        ans: "2",
+      }, { skills: ["symmetry"] }),
+
+    T("patterns", "foundation", "Arithmetic", "Patterns",
+      "A pattern follows a rule. Find the rule, then the next term.",
+      [
+        "Look at the gap between neighbouring terms: adding the same number each time is an arithmetic pattern.",
+        "Some patterns multiply by the same number each time.",
+        "Shape patterns grow by adding the same number of sides or dots.",
+        "Write the rule in words first, then use it to find the missing term.",
+      ],
+      [
+        ["Add-on pattern", R`a,\ a+d,\ a+2d,\ a+3d,\ \ldots`],
+        ["Times pattern", R`a,\ ar,\ ar^2,\ ar^3,\ \ldots`],
+      ],
+      {
+        q: "The pattern is 4, 7, 10, 13, … What is the next term?",
+        steps: ["Each term is 3 more than the one before.", "13 + 3 = 16."],
+        ans: "16",
+      }, { skills: ["patterns"] }),
+
+    T("data-handling", "foundation", "Statistics", "Data handling and pictographs",
+      "Collect information, sort it with tally marks, and show it as a pictograph or bar graph.",
+      [
+        "Tally marks are drawn in groups of five: four lines with a fifth across them.",
+        "A pictograph uses a symbol for a fixed number of things. Always read the key first.",
+        "If one symbol stands for 5, then 4 symbols stand for $4 \\times 5 = 20$; half a symbol stands for 2 or 3.",
+        "A bar graph uses bars of equal width; the height of each bar shows the number.",
+        "To compare two rows, work out both values, then subtract.",
+      ],
+      [
+        ["Reading a pictograph", R`\text{value} = \text{number of symbols} \times \text{key}`],
+        ["Tally", R`\cancel{\text{IIII}} = 5`],
+      ],
+      {
+        q: "In a pictograph each 🍎 = 10 apples. Monday has 6 symbols and Tuesday has 4. How many more apples were sold on Monday?",
+        steps: ["Monday: 6 × 10 = 60.", "Tuesday: 4 × 10 = 40.", "60 − 40 = 20."],
+        ans: "20 more apples",
+      }, { skills: ["pictograph"] }),
+
+    T("angles-turns", "foundation", "Geometry", "Angles and turns",
+      R`An angle measures an amount of turn. A full turn is $360^\circ$.`,
+      [
+        R`A quarter turn is a right angle, $90^\circ$. A half turn is a straight angle, $180^\circ$.`,
+        R`Acute angles are less than $90^\circ$; obtuse angles are between $90^\circ$ and $180^\circ$.`,
+        R`A reflex angle is more than $180^\circ$ but less than $360^\circ$.`,
+        "Measure angles with a protractor: put its centre on the vertex and its zero line on one arm.",
+        "Clock hands and compass directions (N, E, S, W) are everyday angles: N to E is a quarter turn.",
+      ],
+      [
+        ["Turns", R`\tfrac14\ \text{turn} = 90^\circ,\ \tfrac12\ \text{turn} = 180^\circ,\ 1\ \text{turn} = 360^\circ`],
+        ["Types", R`\text{acute} < 90^\circ < \text{obtuse} < 180^\circ < \text{reflex} < 360^\circ`],
+      ],
+      {
+        q: R`What kind of angle is $135^\circ$, and how far is it from a straight angle?`,
+        steps: [R`$135^\circ$ is between $90^\circ$ and $180^\circ$, so it is obtuse.`, R`$180^\circ - 135^\circ = 45^\circ$.`],
+        ans: R`Obtuse, $45^\circ$ short of a straight angle`,
+      }, { skills: ["angle-kind"] }),
+
     /* ---------- Middle school ---------- */
     T("integers", "middle", "Arithmetic", "Integers",
       R`Whole numbers and their negatives: $\ldots, -2, -1, 0, 1, 2, \ldots$`,
@@ -167,6 +278,7 @@
         R`Subtracting a negative is the same as adding: $a - (-b) = a + b$.`,
         "Same signs multiply to give a positive; different signs give a negative.",
         R`The absolute value $|a|$ is the distance of $a$ from zero.`,
+        "When + and × share a line, follow [[/rules|BODMAS]]: multiply first.",
       ],
       [
         ["Sign rules", R`(+)(+) = +,\quad (-)(-) = +,\quad (+)(-) = -`],
@@ -179,13 +291,32 @@
         ans: R`$10$`,
       }, { skills: ["integers"] }),
 
+    T("primes", "middle", "Number theory", "Prime numbers",
+      "A prime has exactly two factors: 1 and itself. Composite numbers have more.",
+      [
+        "2 is the only even prime. 1 is neither prime nor composite.",
+        "To test a number, try dividing by primes up to its square root.",
+        "Every whole number greater than 1 is a prime or a product of primes.",
+        "When a division ladder stops, the leftover numbers share no common prime — they are often primes themselves.",
+      ],
+      [
+        ["First primes", R`2, 3, 5, 7, 11, 13, 17, 19, 23, 29`],
+        ["Divisibility by 2, 5, 10", R`\text{last digit even};\ \text{last digit }0\ \text{or }5;\ \text{last digit }0`],
+        ["Divisibility by 3 or 9", R`\text{digit sum divisible by }3\ \text{or }9`],
+      ],
+      {
+        q: "Which of 1, 9, 11 and 15 are prime?",
+        steps: ["1 has only one factor, so it is not prime.", "9 = 3 × 3, composite. 15 = 3 × 5, composite.", "11 has factors 1 and 11 only, so 11 is prime."],
+        ans: "Only 11",
+      }, { skills: ["primes", "divis"], tool: "numbers" }),
+
     T("factors-multiples", "middle", "Number theory", "Factors, multiples, HCF and LCM",
       "Breaking numbers into prime factors to see what they share.",
       [
-        "A prime has exactly two factors: 1 and itself. 1 is not prime.",
+        "A [[primes|prime]] has exactly two factors: 1 and itself. 1 is not prime.",
         "Every whole number above 1 has exactly one prime factorisation.",
         "HCF: take each common prime with its lowest power. LCM: take every prime with its highest power.",
-        "Divisible by 3 or 9 when the digit sum is; by 4 when the last two digits are; by 8 when the last three are.",
+        "When the ladder leftover is two primes, tap them to open the [[primes|prime numbers]] topic.",
       ],
       [
         ["HCF and LCM of two numbers", R`\text{HCF}(a,b) \times \text{LCM}(a,b) = a \times b`],
@@ -214,7 +345,7 @@
         q: "6 workers build a wall in 10 days. How long would 15 workers take?",
         steps: ["More workers means fewer days, so this is inverse proportion.", R`$6 \times 10 = 15 \times d$.`, R`$d = 60 \div 15 = 4$.`],
         ans: "4 days",
-      }, { skills: ["proportion"] }),
+      }, { skills: ["proportion", "invprop"] }),
 
     T("percentages", "middle", "Arithmetic", "Percentages",
       R`Per cent means per hundred: $25\% = \frac{25}{100}$.`,
@@ -312,6 +443,25 @@
         ans: R`$x = 5$`,
       }, { skills: ["linear"], tool: "solver" }),
 
+    T("geometry-basics", "middle", "Geometry", "Basic geometrical ideas",
+      "Points, line segments, rays, lines, curves and polygons: the words all geometry is built from.",
+      [
+        "A point marks an exact position. It has no size and is named with a capital letter.",
+        R`A line segment $\overline{AB}$ has two end points; a ray $\overrightarrow{AB}$ has one; a line $\overleftrightarrow{AB}$ has none.`,
+        "Two lines that meet are intersecting lines; lines in a plane that never meet are parallel.",
+        "Perpendicular lines meet at a right angle.",
+        "A polygon is a closed figure made only of line segments. A circle is a closed curve.",
+      ],
+      [
+        ["Notation", R`\overline{AB}\ \text{segment},\quad \overrightarrow{AB}\ \text{ray},\quad \overleftrightarrow{AB}\ \text{line}`],
+        ["Parallel and perpendicular", R`l \parallel m,\qquad l \perp m`],
+      ],
+      {
+        q: "How many line segments can you name using three points A, B and C that are not in a line?",
+        steps: ["Pick any two of the three points: AB, BC and CA.", "That is 3 segments — the three sides of triangle ABC."],
+        ans: "3 line segments",
+      }, { skills: ["geo-terms"] }),
+
     T("lines-angles", "middle", "Geometry", "Lines, angles and triangles",
       "The angle facts behind most geometry problems.",
       [
@@ -330,7 +480,101 @@
         q: R`Two angles of a triangle are $48^\circ$ and $67^\circ$. Find the third.`,
         steps: [R`$48 + 67 = 115$.`, R`$180 - 115 = 65$.`],
         ans: R`$65^\circ$`,
-      }, { skills: ["angles"] }),
+      }, { skills: ["angles", "angle-kind"] }),
+
+    T("congruence", "middle", "Geometry", "Congruence of triangles",
+      "Congruent figures have the same shape and the same size: one fits exactly on top of the other.",
+      [
+        R`We write $\triangle ABC \cong \triangle PQR$; the order of letters shows which parts match.`,
+        "SSS: three sides of one triangle equal three sides of the other.",
+        "SAS: two sides and the angle between them are equal.",
+        "ASA (or AAS): two angles and a side are equal.",
+        "RHS: right angle, hypotenuse and one side are equal. AAA is not a congruence rule — it only gives similar triangles.",
+      ],
+      [
+        ["Rules", R`\text{SSS},\ \text{SAS},\ \text{ASA},\ \text{AAS},\ \text{RHS}`],
+        ["CPCT", R`\text{corresponding parts of congruent triangles are equal}`],
+      ],
+      {
+        q: R`In $\triangle ABC$ and $\triangle PQR$: $AB = PQ$, $\angle A = \angle P$ and $AC = PR$. Are they congruent?`,
+        steps: ["Two sides are equal: AB = PQ and AC = PR.", R`The angle between them is equal too: $\angle A = \angle P$.`, "That is SAS, so the triangles are congruent."],
+        ans: R`Yes, $\triangle ABC \cong \triangle PQR$ by SAS`,
+      }, { skills: ["congruence"] }),
+
+    T("constructions", "middle", "Geometry", "Practical geometry and constructions",
+      "Using only a ruler and compasses to draw exact lines, angles and triangles.",
+      [
+        "A perpendicular bisector cuts a segment in half at right angles: draw equal arcs from both ends and join where they cross.",
+        "To bisect an angle, draw an arc from the vertex, then equal arcs from where it cuts the arms.",
+        R`A $60^\circ$ angle comes from an equilateral triangle: keep the compass width the same.`,
+        "Triangles can be constructed from SSS, SAS, ASA or RHS measurements.",
+        "Triangle inequality: any two sides added together must be longer than the third side.",
+      ],
+      [
+        ["Triangle inequality", R`a + b > c,\quad b + c > a,\quad c + a > b`],
+        ["Third side range", R`|a - b| < c < a + b`],
+      ],
+      {
+        q: "Can you construct a triangle with sides 4 cm, 5 cm and 10 cm?",
+        steps: ["Add the two shorter sides: 4 + 5 = 9.", "9 is less than 10, so the two short sides cannot meet.", "No triangle is possible."],
+        ans: "No",
+      }, { skills: ["tri-ineq"] }),
+
+    T("quads", "middle", "Geometry", "Quadrilaterals",
+      "Four-sided polygons: parallelograms, rectangles, rhombuses, squares and trapeziums.",
+      [
+        R`The four interior angles of any quadrilateral add to $360^\circ$.`,
+        "A parallelogram has both pairs of opposite sides parallel and equal; opposite angles are equal.",
+        "A rectangle is a parallelogram with four right angles; a rhombus has four equal sides.",
+        "A square is both a rectangle and a rhombus. A trapezium has exactly one pair of parallel sides.",
+      ],
+      [
+        ["Angle sum", R`\angle A + \angle B + \angle C + \angle D = 360^\circ`],
+        ["Parallelogram", R`AB = CD,\ AD = BC,\ \angle A = \angle C`],
+        ["Rectangle", R`\text{all angles }90^\circ,\ \text{diagonals equal}`],
+      ],
+      {
+        q: R`Three angles of a quadrilateral are $80^\circ$, $95^\circ$ and $110^\circ$. Find the fourth.`,
+        steps: [R`$80 + 95 + 110 = 285$.`, R`Fourth angle $= 360 - 285 = 75$.`],
+        ans: R`$75^\circ$`,
+      }, { skills: ["quads"] }),
+
+    T("solids", "middle", "Geometry", "Solid shapes",
+      "Cubes, cuboids, prisms and pyramids: faces, edges and vertices.",
+      [
+        "A face is a flat surface, an edge is where two faces meet, a vertex is a corner.",
+        R`Euler's formula for these solids: $F + V - E = 2$.`,
+        "A cube has 6 faces, 12 edges and 8 vertices. A triangular prism has 5 faces, 9 edges and 6 vertices.",
+        "Nets fold up to make a solid: a cube's net is 6 squares joined edge to edge.",
+      ],
+      [
+        ["Euler", R`F + V - E = 2`],
+        ["Cube", R`F=6,\ E=12,\ V=8`],
+        ["Triangular prism", R`F=5,\ E=9,\ V=6`],
+      ],
+      {
+        q: "A cuboid has 6 faces and 8 vertices. How many edges does it have?",
+        steps: [R`Euler: $F + V - E = 2$.`, R`$6 + 8 - E = 2$, so $E = 12$.`],
+        ans: "12 edges",
+      }, { skills: ["solids"] }),
+
+    T("rationals", "middle", "Arithmetic", "Rational numbers",
+      R`A rational number is any number that can be written $\frac{p}{q}$ with $q \ne 0$.`,
+      [
+        "Integers, fractions and terminating or repeating decimals are all rational.",
+        "To add or subtract, first write both with a common denominator.",
+        "The number line goes on forever in both directions: there is a rational between any two rationals.",
+        R`A negative times a negative is positive: $\left(-\frac{2}{3}\right)\left(-\frac{3}{4}\right) = \frac{1}{2}$.`,
+      ],
+      [
+        ["On the line", R`\ldots,\ -2,\ -1,\ -\tfrac12,\ 0,\ \tfrac12,\ 1,\ 2,\ \ldots`],
+        ["Adding", R`\frac{a}{b} + \frac{c}{d} = \frac{ad + bc}{bd}`],
+      ],
+      {
+        q: R`Work out $\frac{2}{3} + \left(-\frac{5}{6}\right)$.`,
+        steps: [R`LCM of 3 and 6 is 6: $\frac{2}{3} = \frac{4}{6}$.`, R`$\frac{4}{6} - \frac{5}{6} = -\frac{1}{6}$.`],
+        ans: R`$-\frac{1}{6}$`,
+      }, { skills: ["rationals"] }),
 
     T("mensuration-2d", "middle", "Mensuration", "Circles and plane figures",
       "Areas and perimeters of circles, triangles and quadrilaterals.",
@@ -392,6 +636,25 @@
       }, { skills: ["mean"], tool: "stats" }),
 
     /* ---------- Secondary ---------- */
+    T("graphs-pie", "middle", "Statistics", "Bar graphs, pie charts and line graphs",
+      "Different graphs for different data: compare with bars, show parts of a whole with a pie, show change with a line.",
+      [
+        "A double bar graph puts two bars side by side to compare two sets of data.",
+        R`In a pie chart the whole circle, $360^\circ$, stands for the total.`,
+        R`Each sector's angle is $\frac{\text{value}}{\text{total}} \times 360^\circ$.`,
+        "A line graph joins points plotted against time; a rising line means increase.",
+        "A histogram shows grouped data with bars that touch, one bar for each class interval.",
+      ],
+      [
+        ["Pie chart angle", R`\theta = \frac{\text{value}}{\text{total}} \times 360^\circ`],
+        ["Percent to angle", R`p\% \text{ of } 360^\circ = 3.6p^\circ`],
+      ],
+      {
+        q: "Out of 36 students, 9 walk to school. What angle shows walking in a pie chart?",
+        steps: [R`$\frac{9}{36} = \frac{1}{4}$.`, R`$\frac14 \times 360^\circ = 90^\circ$.`],
+        ans: R`$90^\circ$`,
+      }, { skills: ["pie"] }),
+
     T("real-numbers", "secondary", "Number theory", "Real numbers",
       "The fundamental theorem of arithmetic, Euclid's algorithm and irrational numbers.",
       [
@@ -506,6 +769,27 @@
         ans: R`$5$`,
       }, { skills: ["distance"], tool: "graph" }),
 
+    T("euclid", "secondary", "Geometry", "Euclid's geometry",
+      "A short list of agreed rules from which the rest of school geometry is built.",
+      [
+        "A point has position but no size. A line has length but no breadth.",
+        "Through two distinct points there is exactly one straight line.",
+        "A line segment has two endpoints; a ray has one and goes on forever the other way.",
+        "Euclid's postulates let you draw a unique line, extend a segment, and draw a circle of any radius.",
+        "Things which are equal to the same thing are equal to one another.",
+      ],
+      [
+        ["Two points", R`\text{exactly one line}`],
+        ["Line segment", R`\text{2 endpoints}`],
+        ["Ray", R`\text{1 endpoint}`],
+        ["Right angles", R`\text{all right angles are equal}`],
+      ],
+      {
+        q: "How many distinct straight lines pass through two given points?",
+        steps: ["Euclid's first postulate: a unique straight line can be drawn joining any two points.", "So the number is 1."],
+        ans: "1",
+      }, { skills: ["euclid"] }),
+
     T("triangles", "secondary", "Geometry", "Similar triangles and Pythagoras",
       "When shapes are scaled copies of each other, and the most famous theorem in maths.",
       [
@@ -542,6 +826,26 @@
         steps: [R`The radius meets the tangent at $90^\circ$.`, R`$t = \sqrt{13^2 - 5^2} = \sqrt{144} = 12$.`],
         ans: "12 cm",
       }, { skills: ["tangent"] }),
+
+    T("circle-areas", "secondary", "Mensuration", "Areas related to circles",
+      "Sectors, arcs and segments: parts of a circle cut off by radii or a chord.",
+      [
+        "A sector is the slice between two radii, like a slice of pizza.",
+        R`A sector with angle $\theta$ is $\frac{\theta}{360}$ of the whole circle.`,
+        "The arc is the curved edge of the sector.",
+        "A segment is the region between a chord and its arc: sector area minus the triangle.",
+        R`NCERT usually takes $\pi = \frac{22}{7}$ when the radius is a multiple of 7, otherwise $3.14$.`,
+      ],
+      [
+        ["Arc length", R`l = \frac{\theta}{360} \times 2\pi r`],
+        ["Area of sector", R`A = \frac{\theta}{360} \times \pi r^2`],
+        ["Area of segment", R`\text{sector} - \text{triangle}`],
+      ],
+      {
+        q: R`Find the area of a sector of radius 21 cm and angle $60^\circ$. Use $\pi = \frac{22}{7}$.`,
+        steps: [R`$\frac{60}{360} = \frac16$ of the circle.`, R`$\pi r^2 = \frac{22}{7} \times 21^2 = 1386$ cm².`, R`$\frac16 \times 1386 = 231$ cm².`],
+        ans: "231 cm²",
+      }, { skills: ["sector"] }),
 
     T("trig-basic", "secondary", "Trigonometry", "Introduction to trigonometry",
       "Ratios of the sides of a right triangle: sine, cosine and tangent.",
@@ -680,6 +984,45 @@
         steps: [R`$\sin 75^\circ = \sin(45^\circ + 30^\circ)$.`, R`$= \frac{\sqrt2}{2}\cdot\frac{\sqrt3}{2} + \frac{\sqrt2}{2}\cdot\frac12$.`, R`$= \frac{\sqrt6 + \sqrt2}{4}$.`],
         ans: R`$\frac{\sqrt6 + \sqrt2}{4} \approx 0.9659$`,
       }, { tool: "graph" }),
+
+    T("inverse-trig", "senior", "Trigonometry", "Inverse trigonometric functions",
+      R`$\sin^{-1} x$ asks "which angle has sine $x$?" — the answer is taken from a fixed principal range.`,
+      [
+        R`$\sin^{-1}$ gives an angle in $\left[-\frac{\pi}{2}, \frac{\pi}{2}\right]$.`,
+        R`$\cos^{-1}$ gives an angle in $[0, \pi]$.`,
+        R`$\tan^{-1}$ gives an angle in $\left(-\frac{\pi}{2}, \frac{\pi}{2}\right)$.`,
+        R`$\sin^{-1}(-x) = -\sin^{-1} x$, but $\cos^{-1}(-x) = \pi - \cos^{-1} x$.`,
+        R`$\sin^{-1} x$ is not $\frac{1}{\sin x}$; that is $\operatorname{cosec} x$.`,
+      ],
+      [
+        ["Principal ranges", R`\sin^{-1}: \left[-\tfrac{\pi}{2}, \tfrac{\pi}{2}\right],\ \cos^{-1}: [0, \pi],\ \tan^{-1}: \left(-\tfrac{\pi}{2}, \tfrac{\pi}{2}\right)`],
+        ["Negative inputs", R`\sin^{-1}(-x) = -\sin^{-1}x,\quad \cos^{-1}(-x) = \pi - \cos^{-1}x`],
+        ["Sum", R`\sin^{-1}x + \cos^{-1}x = \frac{\pi}{2}`],
+      ],
+      {
+        q: R`Find $\cos^{-1}\left(-\frac12\right)$.`,
+        steps: [R`$\cos^{-1}\frac12 = \frac{\pi}{3}$.`, R`$\cos^{-1}(-x) = \pi - \cos^{-1}x$.`, R`$\pi - \frac{\pi}{3} = \frac{2\pi}{3}$, which is in $[0, \pi]$.`],
+        ans: R`$\frac{2\pi}{3}$`,
+      }, { skills: ["inv-trig"] }),
+
+    T("inequalities", "senior", "Algebra", "Linear inequalities",
+      R`Like equations, but with $<$, $>$, $\le$ or $\ge$: the answer is a range of numbers.`,
+      [
+        "You may add or subtract the same number on both sides.",
+        "Multiplying or dividing by a positive number keeps the sign.",
+        "Multiplying or dividing by a negative number flips the sign: < becomes >.",
+        "On a number line, an open dot means the end number is not included; a filled dot means it is.",
+        R`Interval notation: $x < 3$ is $(-\infty, 3)$; $x \ge 3$ is $[3, \infty)$.`,
+      ],
+      [
+        ["Flip rule", R`-2x < 6 \implies x > -3`],
+        ["Interval form", R`x \le a \iff x \in (-\infty, a]`],
+      ],
+      {
+        q: R`Solve $5 - 2x \ge 11$.`,
+        steps: [R`Subtract 5: $-2x \ge 6$.`, R`Divide by $-2$ and flip the sign: $x \le -3$.`],
+        ans: R`$x \le -3$, i.e. $(-\infty, -3]$`,
+      }, { skills: ["inequality"] }),
 
     T("complex", "senior", "Algebra", "Complex numbers",
       R`Numbers of the form $a + bi$, where $i^2 = -1$.`,
@@ -1083,5 +1426,82 @@
         steps: [R`Mean $= 40 \div 8 = 5$.`, "Squared deviations: 9, 1, 1, 1, 0, 0, 4 and 16, which total 32.", R`$\sigma^2 = 32 \div 8 = 4$, so $\sigma = 2$.`],
         ans: R`$2$`,
       }, { tool: "stats" }),
+  ];
+
+  /* [word, meaning, topic id] — the topic id is where "Learn more" goes. */
+  window.MZ_GLOSSARY = [
+    ["Acute angle", R`An angle less than $90^\circ$.`, "angles-turns"],
+    ["Algebraic expression", R`Numbers and letters joined by operations, such as $3x + 2y$.`, "algebra-identities"],
+    ["Alternate angles", "Angles on opposite sides of a transversal, between two lines. They are equal when the lines are parallel.", "lines-angles"],
+    ["Arc", "Part of the curved edge of a circle.", "circle-areas"],
+    ["Area", "The amount of flat surface a shape covers, measured in square units.", "perimeter-area"],
+    ["Arithmetic progression", R`A list where each term is the previous one plus a fixed difference $d$.`, "ap"],
+    ["Average (mean)", "Add all the values and divide by how many there are.", "data-basic"],
+    ["Bar graph", "A chart where the height of each bar shows a number.", "data-handling"],
+    ["BODMAS", "The order to work out a calculation: Brackets, Orders, Division and Multiplication, then Addition and Subtraction.", "/rules"],
+    ["Chord", "A line segment joining two points on a circle.", "circles"],
+    ["Circumference", R`The distance around a circle: $2\pi r$.`, "mensuration-2d"],
+    ["Co-prime", "Two numbers whose HCF is 1, such as 7 and 5.", "factors-multiples"],
+    ["Composite number", "A whole number with more than two factors, such as 4, 6 or 9.", "primes"],
+    ["Congruent", "Exactly the same shape and size.", "congruence"],
+    ["Coordinates", R`A pair $(x, y)$ giving a point's position on a grid.`, "coordinate"],
+    ["Decimal", "A number with a decimal point; places after it are tenths, hundredths and so on.", "decimals"],
+    ["Denominator", "The bottom number of a fraction: how many equal parts make a whole.", "fractions"],
+    ["Derivative", "The rate of change of a function; the slope of its graph.", "limits-derivatives"],
+    ["Diameter", "A chord through the centre of a circle; twice the radius.", "mensuration-2d"],
+    ["Divisible", "A number is divisible by another if it divides with no remainder.", "primes"],
+    ["Edge", "A line where two faces of a solid meet.", "solids"],
+    ["Equation", "A statement that two expressions are equal, such as 2x + 3 = 11.", "linear-one"],
+    ["Exponent (power)", R`The small number that says how many times to multiply: $2^3 = 2 \times 2 \times 2$.`, "exponents"],
+    ["Face", "A flat surface of a solid.", "solids"],
+    ["Factor", "A number that divides another exactly. The factors of 6 are 1, 2, 3 and 6.", "factors-multiples"],
+    ["Fraction", "Part of a whole, written as numerator over denominator.", "fractions"],
+    ["HCF", "Highest common factor: the biggest number that divides two numbers exactly.", "factors-multiples"],
+    ["Hypotenuse", "The longest side of a right-angled triangle, opposite the right angle.", "triangles"],
+    ["Inequality", "A statement using <, >, ≤ or ≥ instead of =.", "inequalities"],
+    ["Integer", "A whole number or its negative: …, −2, −1, 0, 1, 2, …", "integers"],
+    ["Integral", "The reverse of a derivative; also the area under a curve.", "integrals"],
+    ["Irrational number", R`A number that can't be written as a fraction, such as $\sqrt2$ or $\pi$.`, "real-numbers"],
+    ["LCM", "Lowest common multiple: the smallest number that two numbers both divide.", "factors-multiples"],
+    ["Line", "A straight path that goes on forever in both directions.", "geometry-basics"],
+    ["Line segment", "Part of a line with two end points.", "geometry-basics"],
+    ["Line of symmetry", "A fold line that makes both halves of a shape match exactly.", "symmetry"],
+    ["Matrix", "A rectangular grid of numbers in rows and columns.", "matrices"],
+    ["Median", "The middle value when the data is in order.", "data-basic"],
+    ["Mode", "The value that appears most often.", "data-basic"],
+    ["Multiple", "The result of multiplying a number by a whole number. Multiples of 4: 4, 8, 12, …", "factors-multiples"],
+    ["Numerator", "The top number of a fraction: how many parts are taken.", "fractions"],
+    ["Obtuse angle", R`An angle between $90^\circ$ and $180^\circ$.`, "angles-turns"],
+    ["Parallel lines", "Lines in the same plane that never meet.", "geometry-basics"],
+    ["Percentage", "A number out of 100. 25% means 25 out of every 100.", "percentages"],
+    ["Perimeter", "The total distance around the edge of a shape.", "perimeter-area"],
+    ["Perpendicular", "Meeting at a right angle.", "geometry-basics"],
+    ["Pictograph", "A chart that uses pictures; the key says what each picture stands for.", "data-handling"],
+    ["Pie chart", R`A circle split into sectors; the whole $360^\circ$ is the total.`, "graphs-pie"],
+    ["Place value", "The value of a digit from its position: ones, tens, hundreds…", "place-value"],
+    ["Polygon", "A closed shape made only of straight sides.", "shapes"],
+    ["Polynomial", R`A sum of terms like $ax^n$ with whole-number powers.`, "polynomials"],
+    ["Prime factorisation", R`Writing a number as a product of primes: $12 = 2 \times 2 \times 3$.`, "factors-multiples"],
+    ["Prime number", "A number with exactly two factors, 1 and itself: 2, 3, 5, 7, 11, …", "primes"],
+    ["Probability", "How likely something is, from 0 (impossible) to 1 (certain).", "probability-basic"],
+    ["Quadratic equation", R`An equation of the form $ax^2 + bx + c = 0$.`, "quadratic"],
+    ["Quadrilateral", "A polygon with four sides.", "quads"],
+    ["Radius", "The distance from the centre of a circle to its edge.", "mensuration-2d"],
+    ["Ratio", "A comparison of two amounts, written a : b.", "ratio-proportion"],
+    ["Rational number", R`Any number $\frac{p}{q}$ with integers $p, q$ and $q \ne 0$.`, "rationals"],
+    ["Ray", "Part of a line with one end point, going on forever in one direction.", "geometry-basics"],
+    ["Reflex angle", R`An angle between $180^\circ$ and $360^\circ$.`, "angles-turns"],
+    ["Right angle", R`An angle of exactly $90^\circ$ — a quarter turn.`, "angles-turns"],
+    ["Roman numerals", "Letters used as numbers: I, V, X, L, C, D, M.", "roman"],
+    ["Sector", "The slice of a circle between two radii.", "circle-areas"],
+    ["Set", "A well-defined collection of objects.", "sets"],
+    ["Similar", "The same shape but not necessarily the same size.", "triangles"],
+    ["Square root", R`The number that multiplies by itself to give the original: $\sqrt{49} = 7$.`, "squares-roots"],
+    ["Tangent", "A line that touches a circle at exactly one point.", "circles"],
+    ["Term", R`One part of an expression, separated by + or −, such as $3x$.`, "algebra-identities"],
+    ["Variable", "A letter that stands for an unknown number.", "linear-one"],
+    ["Vector", "A quantity with both size and direction.", "vectors"],
+    ["Vertex", "A corner where sides or edges meet. Plural: vertices.", "shapes"],
+    ["Volume", "The amount of space a solid takes up, in cubic units.", "surface-volume"],
   ];
 })();

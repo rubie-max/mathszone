@@ -781,6 +781,8 @@
       <div class="link-grid">
         <a href="#/learn"><span>${icon("book")}</span>Topics</a>
         <a href="#/formulas"><span>${icon("sigma")}</span>Formulas</a>
+        <a href="#/rules"><span>${icon("list")}</span>Rules</a>
+        <a href="#/glossary"><span>${icon("abc")}</span>Glossary</a>
         <a href="#/tools/calculator"><span>${icon("calc")}</span>Calculator</a>
         <a href="#/tools/graph"><span>${icon("graph")}</span>Graphs</a>
       </div>

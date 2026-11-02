@@ -260,6 +260,72 @@
     return { viz: { t: "rect", l, b, mode: "per" }, q: `A rectangle is ${l} cm long and ${b} cm wide. Find its perimeter in cm.`, ans: [2 * (l + b)], unit: " cm", show: `$${2 * (l + b)}$ cm`, wrong: [l * b, l + b, 2 * l + b], how: [`Perimeter is the distance all the way round: two lengths and two breadths, $P = 2(l + b)$.`, `Add the length and breadth: $${l} + ${b} = ${l + b}$.`, `Double it: $2 \\times ${l + b} = ${2 * (l + b)}$ cm.`] };
   });
 
+  const ROMAN = [[1000, "M"], [900, "CM"], [500, "D"], [400, "CD"], [100, "C"], [90, "XC"], [50, "L"], [40, "XL"], [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]];
+  const toRoman = (n) => { let s = "", x = n; for (const [v, r] of ROMAN) while (x >= v) { s += r; x -= v; } return s; };
+
+  add("roman", "roman", "Roman numerals", () => {
+    const n = ri(4, 49);
+    const r = toRoman(n);
+    return { viz: { t: "roman", n, r }, q: `What number is the Roman numeral ${r}?`, ans: [n], show: M(n), wrong: [n + 1, n - 1, n + 10, n + 4], how: [`I = 1, V = 5, X = 10, L = 50.`, `A smaller letter in front means subtract: IV = 4, IX = 9, XL = 40.`, `${r} = ${n}.`] };
+  }, true);
+
+  const SHAPES = [
+    { name: "triangle", sides: 3, verts: 3 },
+    { name: "quadrilateral", sides: 4, verts: 4 },
+    { name: "pentagon", sides: 5, verts: 5 },
+    { name: "hexagon", sides: 6, verts: 6 },
+  ];
+  add("shapes", "shapes", "Shapes", () => {
+    const s = pick(SHAPES);
+    if (Math.random() < 0.5) return { viz: { t: "shape", kind: s.name, n: s.sides }, q: `How many sides does a ${s.name} have?`, ans: [s.sides], show: M(s.sides), wrong: [s.sides - 1, s.sides + 1, s.sides + 2, 4], how: [`A ${s.name} is a polygon with ${s.sides} straight sides.`, `It also has ${s.verts} vertices (corners).`] };
+    return { viz: { t: "shape", kind: s.name, n: s.verts }, q: `How many vertices does a ${s.name} have?`, ans: [s.verts], show: M(s.verts), wrong: [s.verts - 1, s.verts + 1, s.verts + 2], how: [`A simple polygon has as many vertices as sides.`, `A ${s.name} has ${s.sides} sides, so ${s.verts} vertices.`] };
+  }, true);
+
+  add("symmetry", "symmetry", "Symmetry", () => {
+    const opts = [
+      { name: "square", lines: 4 },
+      { name: "rectangle that is not a square", lines: 2 },
+      { name: "equilateral triangle", lines: 3 },
+      { name: "isosceles triangle that is not equilateral", lines: 1 },
+      { name: "scalene triangle", lines: 0 },
+    ];
+    const s = pick(opts);
+    return { viz: { t: "symm", kind: s.name, lines: s.lines }, q: `How many lines of symmetry does a ${s.name} have?`, ans: [s.lines], show: M(s.lines), min: 0, max: 8, wrong: [s.lines + 1, s.lines + 2, Math.max(0, s.lines - 1), 4].filter((x, i, a) => x !== s.lines && a.indexOf(x) === i), how: [`A line of symmetry folds the shape onto itself.`, `A ${s.name} has ${s.lines} such line${s.lines === 1 ? "" : "s"}.`] };
+  }, true);
+
+  add("patterns", "patterns", "Number patterns", () => {
+    const d = pick([2, 3, 4, 5, 6, 10]), a = ri(1, 12);
+    const list = [0, 1, 2, 3].map((i) => a + i * d), next = a + 4 * d;
+    return { viz: { t: "pattern", list, next, rule: `add ${d} each time` }, q: `The pattern is ${list.join(", ")}, … What is the next term?`, ans: [next], show: M(next), wrong: [next + d, next - d, list[3] + 1, a * 5], how: [`Look at the gap: $${list[1]} - ${list[0]} = ${d}$, and $${list[2]} - ${list[1]} = ${d}$.`, `The rule is add ${d} each time.`, `Next term: $${list[3]} + ${d} = ${next}$.`] };
+  }, true);
+
+  const PICTO = [["Apples", "🍎"], ["Mangoes", "🥭"], ["Bananas", "🍌"], ["Oranges", "🍊"], ["Grapes", "🍇"]];
+  add("pictograph", "data-handling", "Pictographs", () => {
+    const each = pick([2, 5, 10]), sym = pick(PICTO)[1];
+    const rows = sample(PICTO, 4).map(([name]) => [name, ri(1, 7), sym]);
+    const i = ri(0, 3);
+    if (Math.random() < 0.5) {
+      const v = rows[i][1] * each;
+      return { viz: { t: "picto", rows, each, i }, q: `In a pictograph each ${sym} stands for ${each} fruits. ${rows[i][0]} has ${rows[i][1]} symbols. How many ${rows[i][0].toLowerCase()} is that?`, ans: [v], show: M(v), wrong: [rows[i][1], v + each, v - each, rows[i][1] + each], how: [`Each symbol is worth ${each}.`, `$${rows[i][1]} \\times ${each} = ${v}$.`] };
+    }
+    let j;
+    do j = ri(0, 3); while (j === i || rows[j][1] === rows[i][1]);
+    const [hi, lo] = rows[i][1] > rows[j][1] ? [i, j] : [j, i];
+    const d = (rows[hi][1] - rows[lo][1]) * each;
+    return { viz: { t: "picto", rows, each, i: hi, j: lo }, q: `Each ${sym} stands for ${each}. ${rows[hi][0]} has ${rows[hi][1]} symbols and ${rows[lo][0]} has ${rows[lo][1]}. How many more ${rows[hi][0].toLowerCase()} are there?`, ans: [d], show: M(d), wrong: [rows[hi][1] - rows[lo][1], d + each, (rows[hi][1] + rows[lo][1]) * each], how: [`${rows[hi][0]}: $${rows[hi][1]} \\times ${each} = ${rows[hi][1] * each}$.`, `${rows[lo][0]}: $${rows[lo][1]} \\times ${each} = ${rows[lo][1] * each}$.`, `Difference: $${rows[hi][1] * each} - ${rows[lo][1] * each} = ${d}$.`] };
+  }, true);
+
+  const ANG_KINDS = ["Acute", "Right", "Obtuse", "Straight", "Reflex"];
+  add("angle-kind", "angles-turns", "Types of angles", () => {
+    if (Math.random() < 0.35) {
+      const t = pick([["a quarter turn", 90], ["a half turn", 180], ["three-quarters of a turn", 270], ["a full turn", 360]]);
+      return { viz: { t: "angkind", a: t[1] }, q: `How many degrees are there in ${t[0]}?`, ans: [t[1]], unit: "°", show: M(`${t[1]}^\\circ`), wrong: [90, 180, 270, 360, 45].filter((x) => x !== t[1]), how: [`A full turn is $360^\\circ$.`, `${t[0][0].toUpperCase() + t[0].slice(1)} is $${t[1]}^\\circ$.`] };
+    }
+    const kind = pick(ANG_KINDS);
+    const a = { Acute: ri(2, 17) * 5, Right: 90, Obtuse: ri(19, 35) * 5, Straight: 180, Reflex: ri(37, 70) * 5 }[kind];
+    return { viz: { t: "angkind", a }, q: `What kind of angle is $${a}^\\circ$?`, opts: [kind, ...ANG_KINDS.filter((k) => k !== kind)], how: [`Acute: less than $90^\\circ$. Right: $90^\\circ$. Obtuse: between $90^\\circ$ and $180^\\circ$.`, `Straight: $180^\\circ$. Reflex: between $180^\\circ$ and $360^\\circ$.`, `So $${a}^\\circ$ is ${kind.toLowerCase()}.`] };
+  }, true);
+
   /* ================= Middle school ================= */
   add("integers", "integers", "Integers", () => {
     const a = nz(-25, 25), b = nz(-25, 25), c = nz(-25, 25);
@@ -287,6 +353,19 @@
     }
     const a = ri(2, 12), b = ri(2, 12), c = ri(2, 6), d = ri(1, 20);
     return { viz: { t: "bodmas", k, a, b, c, d }, q: M(`(${a} + ${b}) \\times ${c} - ${d}`), ans: [(a + b) * c - d], show: M((a + b) * c - d), wrong: [a + b * c - d, (a + b) * (c - d), (a + b) * c + d], how: [`Brackets first: $${a} + ${b} = ${a + b}$.`, `Multiply next: $${a + b} \\times ${c} = ${(a + b) * c}$.`, `Subtract last: $${(a + b) * c} - ${d} = ${(a + b) * c - d}$.`] };
+  }, true);
+
+  add("primes", "primes", "Prime numbers", () => {
+    const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29];
+    const COMP = [1, 4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 25, 27, 28];
+    if (Math.random() < 0.5) {
+      const n = pick(PRIMES.concat(COMP));
+      const ok = PRIMES.includes(n);
+      return { viz: { t: "primes", n, list: PRIMES.filter((p) => p <= Math.max(n, 13)) }, q: `Is ${n} a prime number? Type 1 for yes, 0 for no.`, ans: [ok ? 1 : 0], show: ok ? "Yes (1)" : "No (0)", min: 0, max: 1, how: [n === 1 ? "1 has only one factor, so it is not prime." : ok ? `${n} has exactly two factors: 1 and ${n}.` : `${n} has a factor other than 1 and itself, so it is composite.`] };
+    }
+    const lo = 1, hi = pick([10, 20]);
+    const count = PRIMES.filter((p) => p >= lo && p <= hi).length;
+    return { viz: { t: "primes", n: hi, list: PRIMES.filter((p) => p <= hi) }, q: `How many prime numbers are there from 1 to ${hi}?`, ans: [count], show: M(count), wrong: [count + 1, count - 1, hi / 2, count + 2], how: [`A prime has exactly two factors: 1 and itself. 1 is not prime.`, `The primes up to ${hi} are ${PRIMES.filter((p) => p <= hi).join(", ")}.`, `There are ${count} of them.`] };
   }, true);
 
   add("hcf", "factors-multiples", "HCF and LCM", () => {
@@ -453,6 +532,104 @@
   add("angles", "lines-angles", "Angles in a triangle", () => {
     const A = ri(25, 100), B = ri(20, 150 - A), C = 180 - A - B;
     return { viz: { t: "angles", A, B }, q: `Two angles of a triangle are $${A}^\\circ$ and $${B}^\\circ$. Find the third angle.`, ans: [C], unit: "°", show: M(`${C}^\\circ`), wrong: [360 - A - B, 90 - Math.min(A, B), C + 10, C - 10], how: [`The three angles of a triangle always add up to $180^\\circ$.`, `Add the two you know: $${A}^\\circ + ${B}^\\circ = ${A + B}^\\circ$.`, `Third angle $= 180^\\circ - ${A + B}^\\circ = ${C}^\\circ$.`] };
+  }, true);
+
+  add("quads", "quads", "Quadrilaterals", () => {
+    const a = ri(50, 120), b = ri(50, 140 - Math.floor(a / 2)), c = ri(40, 300 - a - b - 40), d = 360 - a - b - c;
+    return { viz: { t: "quadang", a, b, c, d }, q: `Three angles of a quadrilateral are $${a}^\\circ$, $${b}^\\circ$ and $${c}^\\circ$. Find the fourth.`, ans: [d], unit: "°", show: M(`${d}^\\circ`), wrong: [180 - (a + b + c) % 180, 360 - a - b, d + 10, 180 - d], how: [`The four angles of a quadrilateral add to $360^\\circ$.`, `$${a} + ${b} + ${c} = ${a + b + c}$.`, `Fourth angle $= 360 - ${a + b + c} = ${d}$.`] };
+  }, true);
+
+  add("solids", "solids", "Solid shapes", () => {
+    const solids = [
+      { name: "cube", F: 6, E: 12, V: 8 },
+      { name: "cuboid", F: 6, E: 12, V: 8 },
+      { name: "triangular prism", F: 5, E: 9, V: 6 },
+      { name: "square pyramid", F: 5, E: 8, V: 5 },
+    ];
+    const s = pick(solids);
+    const ask = pick(["E", "F", "V"]);
+    const label = { F: "faces", E: "edges", V: "vertices" }[ask];
+    return { viz: { t: "solid3d", kind: s.name, F: s.F, E: s.E, V: s.V, ask }, q: `How many ${label} does a ${s.name} have?`, ans: [s[ask]], show: M(s[ask]), wrong: [s.F, s.E, s.V, s[ask] + 2].filter((x, i, a) => x !== s[ask] && a.indexOf(x) === i), how: [`A ${s.name} has ${s.F} faces, ${s.E} edges and ${s.V} vertices.`, `Check Euler: $${s.F} + ${s.V} - ${s.E} = ${s.F + s.V - s.E}$.`] };
+  }, true);
+
+  const GEO_FIG = [
+    ["segment", "Line segment", "It has two end points, A and B."],
+    ["ray", "Ray", "It has one end point and goes on forever in one direction."],
+    ["line", "Line", "It has no end points: it goes on forever both ways."],
+    ["parallel", "Parallel lines", "They stay the same distance apart and never meet."],
+    ["intersecting", "Intersecting lines", "They cross at one point."],
+    ["perpendicular", "Perpendicular lines", "They cross at a right angle."],
+  ];
+  add("geo-terms", "geometry-basics", "Points, lines and rays", () => {
+    const [kind, name, why] = pick(GEO_FIG);
+    const others = GEO_FIG.filter((g) => g[1] !== name && !(kind === "perpendicular" && g[0] === "intersecting") && !(kind === "intersecting" && g[0] === "perpendicular")).map((g) => g[1]);
+    return { viz: { t: "geofig", kind }, q: `What is the name of the figure in the picture?`, opts: [name, ...others], how: [why, `So the figure shows: ${name.toLowerCase()}.`] };
+  }, true);
+
+  const CONGR = [
+    ["SSS", "All three sides of one triangle are equal to the three sides of the other."],
+    ["SAS", "Two sides and the angle between them are equal."],
+    ["ASA", "Two angles and the side between them are equal."],
+    ["RHS", "Both are right-angled, with equal hypotenuses and one other equal side."],
+  ];
+  add("congruence", "congruence", "Congruence rules", () => {
+    const [rule, said] = pick(CONGR);
+    return { viz: { t: "congr", rule }, q: `${said} Which congruence rule proves the triangles congruent?`, opts: [rule, ...CONGR.map((c) => c[0]).filter((r) => r !== rule), "AAA"], how: [`SSS: three sides. SAS: two sides and the angle between them. ASA: two angles and the side between them. RHS: right angle, hypotenuse, side.`, `AAA is not a rule: equal angles give the same shape but not always the same size.`, `Here it is ${rule}.`] };
+  }, true);
+
+  add("tri-ineq", "constructions", "Can it be a triangle?", () => {
+    if (Math.random() < 0.4) {
+      const p = ri(3, 15), q = ri(3, 15);
+      return { viz: { t: "triineq", a: p, b: q, c: null }, q: `Two sides of a triangle are ${p} cm and ${q} cm. The third side must be less than how many cm?`, ans: [p + q], unit: " cm", show: M(`${p + q}\\text{ cm}`), wrong: [Math.abs(p - q), p * q, Math.max(p, q), p + q + 1], how: [`Any two sides of a triangle add up to more than the third side.`, `So the third side is less than $${p} + ${q} = ${p + q}$.`, `It must also be more than $|${p} - ${q}| = ${Math.abs(p - q)}$.`] };
+    }
+    const a = ri(2, 12), b = ri(2, 12), ok = Math.random() < 0.5;
+    const c = ok ? ri(Math.abs(a - b) + 1, a + b - 1) : a + b + ri(0, 4);
+    const [x, y, z] = [a, b, c].sort((m, n) => m - n);
+    return { viz: { t: "triineq", a, b, c }, q: `Can sticks of ${a} cm, ${b} cm and ${c} cm make a triangle?`, opts: ok ? ["Yes", "No"] : ["No", "Yes"], how: [`Add the two shorter sides: $${x} + ${y} = ${x + y}$.`, ok ? `$${x + y} > ${z}$, the longest side, so yes.` : `$${x + y} \\le ${z}$, so the ends can't meet: no triangle.`] };
+  }, true);
+
+  const PIE_SETS = [["Cricket", "Football", "Hockey", "Tennis"], ["Rice", "Wheat", "Pulses", "Fruit"], ["Bus", "Walk", "Cycle", "Car"]];
+  add("pie", "graphs-pie", "Pie charts", () => {
+    const names = pick(PIE_SETS);
+    let vals, N;
+    do { vals = names.map(() => ri(1, 9) * pick([2, 3, 5])); N = vals.reduce((s, v) => s + v, 0); } while (vals.some((v) => (v * 360) % N));
+    const i = ri(0, 3), deg = (vals[i] * 360) / N;
+    const parts = names.map((n, j) => [n, vals[j]]);
+    return { viz: { t: "pie", parts, i }, q: `In a survey of ${N} people: ${parts.map(([n, v]) => `${n} ${v}`).join(", ")}. What angle does ${names[i]} get in a pie chart?`, ans: [deg], unit: "°", show: M(`${deg}^\\circ`), wrong: [vals[i], 360 - deg, deg / 2, (vals[i] * 100) / N], how: [`Total: $${vals.join(" + ")} = ${N}$.`, `Angle $= \\frac{\\text{part}}{\\text{total}} \\times 360^\\circ$.`, `$\\frac{${vals[i]}}{${N}} \\times 360^\\circ = ${deg}^\\circ$.`] };
+  });
+
+  add("divis", "primes", "Divisibility tests", () => {
+    const k = pick([2, 3, 4, 5, 9, 10]);
+    const yes = Math.random() < 0.5;
+    let n;
+    do n = ri(100, 9999); while ((n % k === 0) !== yes);
+    return { viz: { t: "divis", n, k, yes }, q: `Is ${n} divisible by ${k}?`, opts: yes ? ["Yes", "No"] : ["No", "Yes"], how: [
+      { 2: "By 2: the last digit must be even.", 3: "By 3: the digit sum must be divisible by 3.", 4: "By 4: the last two digits must make a number divisible by 4.", 5: "By 5: the last digit must be 0 or 5.", 9: "By 9: the digit sum must be divisible by 9.", 10: "By 10: the last digit must be 0." }[k],
+      k === 3 || k === 9 ? `Digit sum: ${String(n).split("").join(" + ")} = ${String(n).split("").reduce((s, d) => s + +d, 0)}.` : k === 4 ? `Last two digits: ${n % 100}.` : `Last digit: ${n % 10}.`,
+      `So ${n} is ${yes ? "" : "not "}divisible by ${k}.`,
+    ] };
+  }, true);
+
+  add("invprop", "ratio-proportion", "Inverse proportion", () => {
+    const ctx = pick([["workers", "days", "build a wall"], ["taps", "hours", "fill a tank"], ["pumps", "hours", "empty a pool"]]);
+    let w1, d1, w2;
+    do { w1 = ri(2, 12); d1 = ri(2, 24); w2 = ri(2, 16); } while (w2 === w1 || (w1 * d1) % w2);
+    const d2 = (w1 * d1) / w2;
+    return { viz: { t: "invprop", w1, d1, w2, who: ctx[0], unit: ctx[1] }, q: `${w1} ${ctx[0]} take ${d1} ${ctx[1]} to ${ctx[2]}. How many ${ctx[1]} would ${w2} ${ctx[0]} take?`, ans: [d2], show: M(`${d2}\\text{ ${ctx[1]}}`), wrong: [(d1 * w2) / w1, d1 + w1 - w2, d1], how: [`More ${ctx[0]} means fewer ${ctx[1]}: inverse proportion, so ${ctx[0]} × ${ctx[1]} stays the same.`, `$${w1} \\times ${d1} = ${w1 * d1}$.`, `$${w1 * d1} \\div ${w2} = ${d2}$ ${ctx[1]}.`] };
+  });
+
+  add("rationals", "rationals", "Rational numbers", () => {
+    let d1, d2; do { d1 = ri(2, 8); d2 = ri(2, 8); } while (d1 === d2);
+    const n1 = ri(1, d1 - 1), n2 = ri(1, d2 - 1), s2 = pick([1, -1]);
+    const L = E.lcm(d1, d2), N = n1 * (L / d1) + s2 * n2 * (L / d2);
+    const simple = frac(N, L);
+    return {
+      viz: { t: "fracadd", n1, d1, n2: Math.abs(n2), d2 },
+      q: M(`\\frac{${n1}}{${d1}} ${s2 < 0 ? "-" : "+"} \\frac{${n2}}{${d2}}`),
+      ans: [N / L], show: M(simple), frac: true, hint: "Type a fraction such as -1/6.",
+      wrong: [(n1 + s2 * n2) / (d1 + d2), (n1 + s2 * n2) / L, N / (L + 1)],
+      how: [`Write both with denominator ${L}.`, `$\\frac{${n1}}{${d1}} = \\frac{${n1 * (L / d1)}}{${L}}$ and $\\frac{${n2}}{${d2}} = \\frac{${n2 * (L / d2)}}{${L}}$.`, `Then $${n1 * (L / d1)} ${s2 < 0 ? "-" : "+"} ${n2 * (L / d2)} = ${N}$, so the answer is $${simple}$.`],
+    };
   }, true);
 
   add("circle", "mensuration-2d", "Circles", () => {
@@ -808,6 +985,26 @@
     };
   });
 
+  add("sector", "circle-areas", "Sectors and arcs", () => {
+    let r, th, mode, val;
+    do {
+      r = 7 * ri(1, 3); th = pick([30, 45, 60, 90, 120, 135, 180, 270]); mode = Math.random() < 0.6 ? "area" : "arc";
+      val = mode === "area" ? (th / 360) * (22 / 7) * r * r : (th / 360) * 2 * (22 / 7) * r;
+      val = Math.round(val * 1e6) / 1e6;
+    } while (Math.abs(val * 100 - Math.round(val * 100)) > 1e-6);
+    const whole = mode === "area" ? (22 / 7) * r * r : 2 * (22 / 7) * r;
+    return {
+      viz: { t: "sector", r, th, mode, val }, dec: !Number.isInteger(val), unit: mode === "area" ? " cm²" : " cm",
+      q: mode === "area" ? `Find the area of a sector of radius ${r} cm with angle $${th}^\\circ$. Use $\\pi = \\frac{22}{7}$.` : `Find the length of the arc of a sector of radius ${r} cm with angle $${th}^\\circ$. Use $\\pi = \\frac{22}{7}$.`,
+      ans: [val], show: M(`${val}\\text{ ${mode === "area" ? "cm}^2" : "cm}"}`), wrong: [whole, mode === "area" ? (th / 360) * 2 * (22 / 7) * r : (th / 360) * (22 / 7) * r * r, val * 2, val / 2].map((v) => Math.round(v * 100) / 100),
+      how: [
+        `The sector is $\\frac{${th}}{360}$ of the whole circle.`,
+        mode === "area" ? `Whole area $= \\pi r^2 = \\frac{22}{7} \\times ${r}^2 = ${whole}$ cm².` : `Whole circumference $= 2\\pi r = 2 \\times \\frac{22}{7} \\times ${r} = ${whole}$ cm.`,
+        `$\\frac{${th}}{360} \\times ${whole} = ${val}$ ${mode === "area" ? "cm²" : "cm"}.`,
+      ],
+    };
+  });
+
   add("volume", "surface-volume", "Volumes of solids", () => {
     const k = pick(["cube", "cuboid", "cylinder", "cone", "sphere"]);
     let q, v, how, w, o;
@@ -927,6 +1124,42 @@
       `$= ${A} + ${B} - ${both} = ${A + B - both}$`,
     ] };
   });
+
+  const IQS = { "<": "<", ">": ">", "<=": "\\le", ">=": "\\ge" }, IQF = { "<": ">", ">": "<", "<=": ">=", ">=": "<=" };
+  add("inequality", "inequalities", "Linear inequalities", () => {
+    const x = ri(-6, 8), a = pick([2, 3, 4, 5, -2, -3, -4, 1]), b = nz(-12, 12), op = pick(["<", ">", "<=", ">="]);
+    const c = a * x + b, res = a < 0 ? IQF[op] : op;
+    const lhs = `${a === 1 ? "" : a === -1 ? "-" : a}x ${b < 0 ? "-" : "+"} ${Math.abs(b)}`;
+    const f = (o, v) => M(`x ${IQS[o]} ${v}`);
+    return {
+      viz: { t: "ineq", a, b, c, op, x }, q: `Solve $${lhs} ${IQS[op]} ${c}$.`,
+      opts: [f(res, x), f(IQF[res], x), f(res, -x === x ? x + 1 : -x), f(res.length > 1 ? res[0] : res + "=", x)],
+      how: [
+        `${b > 0 ? "Subtract" : "Add"} ${Math.abs(b)} on both sides: $${a === 1 ? "" : a === -1 ? "-" : a}x ${IQS[op]} ${c - b}$.`,
+        a < 0 ? `Divide by $${a}$. Dividing or multiplying by a negative number flips the inequality sign.` : `Divide both sides by ${a}; a positive number keeps the sign the same.`,
+        `$x ${IQS[res]} ${x}$.`,
+      ].filter((_, i) => a !== 1 || i === 0),
+    };
+  }, true);
+
+  const INVT = [
+    ["sin", "\\frac{1}{2}", "\\frac{\\pi}{6}", 30], ["sin", "\\frac{\\sqrt3}{2}", "\\frac{\\pi}{3}", 60], ["sin", "1", "\\frac{\\pi}{2}", 90], ["sin", "-\\frac{1}{2}", "-\\frac{\\pi}{6}", -30], ["sin", "\\frac{1}{\\sqrt2}", "\\frac{\\pi}{4}", 45],
+    ["cos", "\\frac{1}{2}", "\\frac{\\pi}{3}", 60], ["cos", "0", "\\frac{\\pi}{2}", 90], ["cos", "-\\frac{1}{2}", "\\frac{2\\pi}{3}", 120], ["cos", "-1", "\\pi", 180], ["cos", "\\frac{\\sqrt3}{2}", "\\frac{\\pi}{6}", 30],
+    ["tan", "1", "\\frac{\\pi}{4}", 45], ["tan", "\\sqrt3", "\\frac{\\pi}{3}", 60], ["tan", "-1", "-\\frac{\\pi}{4}", -45], ["tan", "\\frac{1}{\\sqrt3}", "\\frac{\\pi}{6}", 30],
+  ];
+  const INV_RANGE = { sin: "\\left[-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right]", cos: "[0, \\pi]", tan: "\\left(-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right)" };
+  add("inv-trig", "inverse-trig", "Inverse trig values", () => {
+    const [f, vt, ans, deg] = pick(INVT);
+    const pool = ["\\frac{\\pi}{6}", "\\frac{\\pi}{3}", "\\frac{\\pi}{4}", "\\frac{\\pi}{2}", "\\frac{2\\pi}{3}", "\\frac{5\\pi}{6}", "-\\frac{\\pi}{6}", "-\\frac{\\pi}{3}", "-\\frac{\\pi}{4}", "\\pi"].filter((s) => s !== ans);
+    const mirror = f === "cos" && deg > 90 && INVT.find((e) => e[0] === "cos" && e[3] === 180 - deg);
+    const trap = ans.startsWith("-") ? ans.slice(1) : mirror ? `-${mirror[2]}` : null;
+    const wrongs = (trap ? [trap] : []).concat(sample(pool.filter((s) => s !== trap), 3 - (trap ? 1 : 0)));
+    return {
+      viz: { t: "invtrig", f, vt, ans, deg, range: INV_RANGE[f] }, q: `Find the principal value of $\\${f}^{-1}\\left(${vt}\\right)$.`,
+      opts: [ans, ...wrongs].map(M),
+      how: [`The principal value of $\\${f}^{-1}$ lies in $${INV_RANGE[f]}$.`, `$\\${f}\\left(${ans}\\right) = ${vt}$, and $${ans}$ is in that range.`, `So $\\${f}^{-1}\\left(${vt}\\right) = ${ans}$.`],
+    };
+  }, true);
 
   add("allied", "trig-functions", "Trig of any angle", () => {
     const a = pick([120, 135, 150, 210, 225, 240, 300, 315, 330]), f = pick(["sin", "cos", "tan"]), v = trigVal(f, a);

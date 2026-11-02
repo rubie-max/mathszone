@@ -39,7 +39,37 @@
   function rich(s) {
     return String(s)
       .split(/(\$[^$]+\$)/g)
-      .map((p) => (p.length > 2 && p[0] === "$" && p[p.length - 1] === "$" ? tex(p.slice(1, -1)) : esc(p)))
+      .map((p) => {
+        if (p.length > 2 && p[0] === "$" && p[p.length - 1] === "$") return tex(p.slice(1, -1));
+        let h = esc(p).replace(/\[\[(\/?[a-z0-9-]+)\|([^\]]+)\]\]/g, (_, id, label) => {
+          const href = id.startsWith("/") ? `#${id}` : `#/topic/${id}`;
+          return `<a class="term" href="${href}">${label}</a>`;
+        });
+        const skip = (re, href) => {
+          h = h.replace(re, (m, ...rest) => {
+            const i = rest[rest.length - 2];
+            const before = h.slice(0, i);
+            if ((before.match(/<a /g) || []).length !== (before.match(/<\/a>/g) || []).length) return m;
+            return `<a class="term" href="${href}">${m}</a>`;
+          });
+        };
+        skip(/\bco-?primes?\b/gi, "#/topic/factors-multiples");
+        skip(/\bprimes?\b/gi, "#/topic/primes");
+        skip(/\bHCF\b/g, "#/topic/factors-multiples");
+        skip(/\bLCM\b/g, "#/topic/factors-multiples");
+        skip(/\bBODMAS\b/g, "#/rules");
+        skip(/\bRoman numerals?\b/gi, "#/topic/roman");
+        skip(/\bquadrilaterals?\b/gi, "#/topic/quads");
+        skip(/\bsymmetry\b/gi, "#/topic/symmetry");
+        skip(/\brational numbers?\b/gi, "#/topic/rationals");
+        skip(/\bcongruent\b/gi, "#/topic/congruence");
+        skip(/\bpictographs?\b/gi, "#/topic/data-handling");
+        skip(/\bpie charts?\b/gi, "#/topic/graphs-pie");
+        skip(/\b(?:acute|obtuse|reflex) angles?\b/gi, "#/topic/angles-turns");
+        skip(/\bline segments?\b/gi, "#/topic/geometry-basics");
+        skip(/\bprincipal values?\b/gi, "#/topic/inverse-trig");
+        return h;
+      })
       .join("");
   }
 
@@ -126,6 +156,8 @@
     backspace: '<path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="m17 9-6 6M11 9l6 6"/>',
     lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
     list: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+    abc: '<path d="M3 17l3.5-10L10 17M4.2 13.5h4.6"/><path d="M13 7v10h3.2a2.6 2.6 0 0 0 0-5.2H13M13 11.8h2.6a2.4 2.4 0 0 0 0-4.8H13"/><path d="M21 4v16"/>',
+    shield: '<path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
     volume: '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>',
     phone: '<rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/>',
     trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
@@ -180,7 +212,9 @@
 
   const learnTabs = (on) => `<div class="seg wide tabs-seg" role="tablist" aria-label="Learn">
     <a href="#/learn" role="tab" aria-selected="${on === "topics"}">${icon("book")} Topics</a>
-    <a href="#/formulas" role="tab" aria-selected="${on === "formulas"}">${icon("sigma")} Formulas</a></div>`;
+    <a href="#/formulas" role="tab" aria-selected="${on === "formulas"}">${icon("sigma")} Formulas</a>
+    <a href="#/rules" role="tab" aria-selected="${on === "rules"}">${icon("list")} Rules</a>
+    <a href="#/glossary" role="tab" aria-selected="${on === "glossary"}">${icon("abc")} Glossary</a></div>`;
 
   function learnView(l) {
     l = l || myLevel() || LEVELS[0];
@@ -324,6 +358,191 @@
     return "Formula sheet";
   }
 
+  function rulesView() {
+    const toc = [
+      ["bodmas", "BODMAS"], ["signs", "Signs"], ["div", "Divisibility"],
+      ["primes", "Primes"], ["hcflcm", "HCF & LCM"], ["roman", "Roman"],
+      ["frac", "Fractions"], ["geo", "Geometry"], ["angles", "Angles"], ["tri", "Triangles"],
+      ["alg", "Algebra"], ["ineq", "Inequalities"],
+    ];
+    const rows = (list) => `<table class="rule-tbl">${list.map(([a, b]) => `<tr><th>${rich(a)}</th><td>${rich(b)}</td></tr>`).join("")}</table>`;
+    const card = (id, title, href, body) => `<section class="rule-card card" id="${id}">
+      <div class="rule-h"><h2>${esc(title)}</h2>${href ? `<a class="term" href="${href}">Open topic</a>` : ""}</div>
+      ${body}</section>`;
+    app.innerHTML = `
+      <h1 class="page-title">Learn</h1>
+      ${learnTabs("rules")}
+      <p class="lead small">${rich("The standing rules of school maths. Underlined words open the matching Learn topic — leftover [[primes|primes]] on an HCF or LCM ladder work the same way.")}</p>
+      <nav class="rule-toc" aria-label="Jump to a rule">${toc.map(([id, lab]) => `<button type="button" data-jump="${id}">${esc(lab)}</button>`).join("")}</nav>
+      <div class="rules">
+        ${card("bodmas", "Order of operations — BODMAS", "", rows([
+          ["Brackets", "Work out anything inside ( ), [ ] or { } first."],
+          ["Orders", "Powers and roots next: $2^3$, $\\sqrt{9}$."],
+          ["Division and Multiplication", "Left to right. $8 \\div 2 \\times 4 = 16$, not 1."],
+          ["Addition and Subtraction", "Left to right, last of all."],
+        ]))}
+        ${card("signs", "Integer sign rules", "#/topic/integers", rows([
+          ["Same signs multiply", "$(+)(+) = +$ and $(-)(-) = +$."],
+          ["Different signs multiply", "$(+)(-) = -$."],
+          ["Subtracting a negative", "$a - (-b) = a + b$."],
+          ["Absolute value", "$|a|$ is the distance from 0, so always $\\ge 0$."],
+        ]))}
+        ${card("div", "Divisibility tests", "#/topic/primes", rows([
+          ["By 2", "Last digit is even: 0, 2, 4, 6 or 8."],
+          ["By 3", "Sum of the digits is divisible by 3."],
+          ["By 5", "Last digit is 0 or 5."],
+          ["By 9", "Sum of the digits is divisible by 9."],
+          ["By 10", "Last digit is 0."],
+        ]))}
+        ${card("primes", "Prime numbers", "#/topic/primes", rows([
+          ["Definition", "Exactly two factors: 1 and itself. 1 is not prime."],
+          ["Only even prime", "2. Every other even number is composite."],
+          ["On an HCF / LCM ladder", "When no prime goes into both leftovers, underline each leftover prime and tap it to open this topic."],
+        ]))}
+        ${card("hcflcm", "HCF and LCM", "#/topic/factors-multiples", rows([
+          ["HCF", "Highest common factor: the biggest number that divides both."],
+          ["LCM", "Lowest common multiple: the smallest number both divide."],
+          ["Ladder", "Divide both by a shared prime. Stop when leftovers share none."],
+          ["Check", "HCF $\\times$ LCM $=$ product of the two numbers."],
+        ]))}
+        ${card("roman", "Roman numerals", "#/topic/roman", rows([
+          ["Letters", "I = 1, V = 5, X = 10, L = 50, C = 100, D = 500, M = 1000."],
+          ["Add", "A smaller (or equal) letter after a larger one: VI = 6, XI = 11."],
+          ["Subtract", "A smaller letter in front: IV = 4, IX = 9, XL = 40, XC = 90."],
+          ["Repeats", "I, X, C, M at most three times. Never repeat V, L or D."],
+        ]))}
+        ${card("frac", "Fractions and rationals", "#/topic/fractions", rows([
+          ["Same denominator", "Add or subtract the tops; keep the bottom."],
+          ["Different denominators", "Rewrite both with the LCM of the bottoms first."],
+          ["Simplify", "Divide top and bottom by their HCF."],
+          ["Rational", "Any $\\frac{p}{q}$ with $q \\ne 0$, including negatives."],
+        ]))}
+        ${card("geo", "Geometry facts", "#/topic/shapes", rows([
+          ["Straight line", "Adjacent angles add to $180^\\circ$."],
+          ["Around a point", "Angles add to $360^\\circ$."],
+          ["Triangle", "Three angles add to $180^\\circ$."],
+          ["Quadrilateral", "Four angles add to $360^\\circ$."],
+          ["Parallel lines", "Alternate angles equal; co-interior angles add to $180^\\circ$."],
+          ["Polygon names", "3 triangle, 4 quadrilateral, 5 pentagon, 6 hexagon."],
+          ["Solids", "Euler: $F + V - E = 2$ for cube, cuboid, prism, pyramid."],
+          ["Symmetry", "A fold that matches both halves is a line of symmetry."],
+        ]))}
+        ${card("angles", "Types of angles", "#/topic/angles-turns", rows([
+          ["Acute", "Less than $90^\\circ$."],
+          ["Right", "Exactly $90^\\circ$ — a quarter turn."],
+          ["Obtuse", "Between $90^\\circ$ and $180^\\circ$."],
+          ["Straight", "Exactly $180^\\circ$ — a half turn."],
+          ["Reflex", "Between $180^\\circ$ and $360^\\circ$."],
+          ["Complete", "$360^\\circ$ — a full turn."],
+        ]))}
+        ${card("tri", "Triangles: congruence and construction", "#/topic/congruence", rows([
+          ["SSS", "Three pairs of equal sides."],
+          ["SAS", "Two sides and the angle between them."],
+          ["ASA / AAS", "Two angles and a side."],
+          ["RHS", "Right angle, hypotenuse and one side."],
+          ["Not a rule", "AAA gives the same shape, not always the same size."],
+          ["Triangle inequality", "Any two sides together are longer than the third: $a + b > c$."],
+        ]))}
+        ${card("alg", "Algebra balance", "#/topic/linear-one", rows([
+          ["Golden rule", "Do the same thing to both sides."],
+          ["To undo $+$", "Subtract that number from both sides."],
+          ["To undo $\\times$", "Divide both sides by that number."],
+          ["Check", "Substitute your $x$ back into the original equation."],
+        ]))}
+        ${card("ineq", "Inequalities", "#/topic/inequalities", rows([
+          ["Add or subtract", "Allowed on both sides; the sign stays."],
+          ["Multiply or divide by a positive", "The sign stays."],
+          ["Multiply or divide by a negative", "Flip the sign: $<$ becomes $>$."],
+          ["Number line", "Open dot for $<$ or $>$; filled dot for $\\le$ or $\\ge$."],
+        ]))}
+      </div>
+      <p class="muted small rule-foot">${rich("Looking for word meanings? See the [[/glossary|Glossary]]. For how this website works, see the [[/terms|site rules]].")}</p>`;
+    app.querySelector(".rule-toc").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-jump]");
+      if (!b) return;
+      const el = document.getElementById(b.dataset.jump);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return "Rules and regulations";
+  }
+
+  function glossaryView(q) {
+    const G = (window.MZ_GLOSSARY || []).slice().sort((a, b) => a[0].localeCompare(b[0]));
+    const letters = [...new Set(G.map((g) => g[0][0].toUpperCase()))];
+    const link = (id) => (id.startsWith("/") ? `#${id}` : `#/topic/${id}`);
+    const label = (id) => (id.startsWith("/") ? "Rules" : TP[id] ? TP[id].title : "");
+    app.innerHTML = `
+      <h1 class="page-title">Learn</h1>
+      ${learnTabs("glossary")}
+      <p class="lead small">${G.length} key words in plain English. Tap a word's topic to learn it properly.</p>
+      <div class="filter-bar">
+        <label class="sr" for="gq">Filter words</label>
+        <span class="field-ic">${icon("search")}<input id="gq" class="field" type="search" placeholder="Filter, for example: prime, angle, fraction" value="${esc(q || "")}" autocomplete="off"></span>
+        <nav class="rule-toc gl-az" aria-label="Jump to a letter">${letters.map((l) => `<button type="button" data-jump="gl-${l}">${l}</button>`).join("")}</nav>
+      </div>
+      <div class="gl-list">${letters.map((l) => `<section class="gl-grp" id="gl-${l}"><h2>${l}</h2>
+        <dl class="gl card">${G.filter((g) => g[0][0].toUpperCase() === l).map(([w, m, id]) => `<div class="gl-row" data-s="${esc(`${w} ${m}`.toLowerCase())}">
+          <dt>${esc(w)}</dt><dd>${rich(m)}${label(id) ? ` <a class="term gl-go" href="${link(id)}">${esc(label(id))}</a>` : ""}</dd></div>`).join("")}</dl></section>`).join("")}
+        <p class="empty" id="gempty" hidden>No words match that filter.</p>
+      </div>`;
+    const inp = document.getElementById("gq");
+    const apply = () => {
+      const s = inp.value.trim().toLowerCase();
+      let any = false;
+      app.querySelectorAll(".gl-grp").forEach((grp) => {
+        let n = 0;
+        grp.querySelectorAll(".gl-row").forEach((r) => { const on = !s || r.dataset.s.includes(s); r.hidden = !on; if (on) n++; });
+        grp.hidden = !n;
+        if (n) any = true;
+      });
+      document.getElementById("gempty").hidden = any;
+    };
+    inp.addEventListener("input", apply);
+    apply();
+    app.querySelector(".gl-az").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-jump]");
+      if (!b) return;
+      inp.value = "";
+      apply();
+      const el = document.getElementById(b.dataset.jump);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return "Glossary";
+  }
+
+  function termsView() {
+    const sec = (title, items) => `<section class="rule-card card"><div class="rule-h"><h2>${esc(title)}</h2></div><ul class="ideas">${items.map((s) => `<li>${rich(s)}</li>`).join("")}</ul></section>`;
+    app.innerHTML = `
+      ${pageHead("shield", "Site rules and terms", "How MathsZone works, what it stores, and how to use it fairly.")}
+      <div class="rules">
+        ${sec("Using MathsZone", [
+          "Learn a topic first, then practise it one skill at a time, then take a topic quiz or chapter test.",
+          "Every question has a worked solution. Most also have a step-by-step animation: press play, or step through with the arrows.",
+          "Underlined words such as [[primes|prime]] or [[factors-multiples|LCM]] open the matching Learn topic.",
+          "The [[/rules|Rules]] page lists the standing rules (BODMAS, sign rules, divisibility tests, angle facts). The [[/glossary|Glossary]] explains key words.",
+        ])}
+        ${sec("Fair use", [
+          "MathsZone is free for students, parents and teachers to use for learning and revision.",
+          "Use the worked solutions to understand a method, then try a fresh question yourself. Questions are generated, so there is always another one.",
+          "Tests and scores here are for self-checking only; they are not official marks.",
+          "Be kind on shared devices: don't reset or change someone else's progress.",
+        ])}
+        ${sec("Your data and privacy", [
+          "There is no sign-up and no account. Nothing you type is sent to a server.",
+          "Progress, streaks, scores, saved mistakes and settings are stored only in this browser on this device.",
+          "Clearing your browser data, or using Reset in [[/me|Me]] → Settings, deletes that progress for good.",
+          "After the first visit the app works offline, so you can practise without the internet.",
+        ])}
+        ${sec("Content and accuracy", [
+          "Topics follow the NCERT syllabus from Class 1 to 12, with some college maths. Use your NCERT textbook as the final reference.",
+          "MathsZone is an independent study aid and is not an official NCERT website.",
+          "NCERT usually takes $\\pi = \\frac{22}{7}$; questions here say when they do.",
+          "If an answer ever looks wrong, compare it with the worked steps and your textbook, and tell your teacher.",
+        ])}
+      </div>`;
+    return "Site rules and terms";
+  }
+
   function toolsView() {
     app.innerHTML = `<h1 class="page-title">Tools</h1><p class="lead small">Calculators and solvers that show their working. Everything runs on your device.</p><div class="tool-grid">${TOOLS.map(toolCard).join("")}</div>`;
     return "Tools";
@@ -344,7 +563,7 @@
     const run = () => {
       const s = inp.value.trim().toLowerCase();
       history.replaceState(null, "", "#/search" + (s ? "?q=" + encodeURIComponent(s) : ""));
-      if (!s) { out.innerHTML = `<p class="empty">Start typing to search ${TOPICS.length} topics and ${FORMULAS.length} formulas.</p>`; return; }
+      if (!s) { out.innerHTML = `<p class="empty">Start typing to search ${TOPICS.length} topics, ${FORMULAS.length} formulas, the rules guide and the glossary.</p>`; return; }
       const words = s.split(/\s+/);
       const hit = (text) => { const low = text.toLowerCase(); return words.every((w) => low.includes(w)); };
       const topics = TOPICS.filter((t) => hit(`${t.title} ${t.summary} ${t.branch} ${t.ideas.join(" ")} ${LV[t.level].range}`))
@@ -352,8 +571,16 @@
       const forms = FORMULAS.filter((f) => hit(`${f.name} ${f.topic.title} ${f.tex.replace(/\\/g, " ")}`)).slice(0, 12);
       const tools = TOOLS.filter((t) => hit(`${t.name} ${t.blurb}`));
       const skills = SKILLS.filter((k) => hit(`${k.name} ${TP[k.topic].title}`)).slice(0, 8);
-      if (!topics.length && !forms.length && !tools.length && !skills.length) { out.innerHTML = `<p class="empty">Nothing matches "${esc(s)}". Try a shorter word.</p>`; return; }
+      const guides = [
+        { href: "#/rules", ic: "list", title: "Rules and regulations", blurb: "BODMAS, signs, divisibility, primes, HCF, LCM, Roman numerals, angles, triangles and inequalities.", key: "bodmas rules regulations" },
+        { href: "#/glossary", ic: "abc", title: "Glossary", blurb: "Key maths words explained in plain English.", key: "glossary words meaning dictionary definitions" },
+        { href: "#/terms", ic: "shield", title: "Site rules and terms", blurb: "How MathsZone works, fair use and your data.", key: "terms privacy data site rules about help" },
+      ].filter((g) => hit(`${g.title} ${g.blurb} ${g.key}`));
+      const gloss = (window.MZ_GLOSSARY || []).filter(([w, m]) => hit(`${w} ${m}`)).sort((a, b) => hit(b[0]) - hit(a[0])).slice(0, 6);
+      if (!topics.length && !forms.length && !tools.length && !skills.length && !guides.length && !gloss.length) { out.innerHTML = `<p class="empty">Nothing matches "${esc(s)}". Try a shorter word.</p>`; return; }
       out.innerHTML = `
+        ${guides.length ? `<h2>Guides</h2><div class="res-list">${guides.map((g) => `<a class="res" href="${g.href}"><span class="lv-dot">${icon(g.ic)}</span><span><b>${esc(g.title)}</b><small>${esc(g.blurb)}</small></span>${icon("right")}</a>`).join("")}</div>` : ""}
+        ${gloss.length ? `<h2>Glossary</h2><div class="res-list">${gloss.map(([w, , id]) => `<a class="res" href="#/glossary?q=${encodeURIComponent(w.toLowerCase())}"><span class="lv-dot">${icon("abc")}</span><span><b>${esc(w)}</b><small>Glossary · ${esc(TP[id] ? TP[id].title : "Rules")}</small></span>${icon("right")}</a>`).join("")}</div>` : ""}
         ${topics.length ? `<h2>Topics</h2><div class="res-list">${topics.map((t) => `<a class="res" href="#/topic/${t.id}" style="--c:${LV[t.level].color}"><span class="lv-dot">${icon(LV[t.level].icon)}</span><span><b>${esc(t.title)}</b><small>${esc(LV[t.level].name)} · ${esc(t.branch)}</small></span>${icon("right")}</a>`).join("")}</div>` : ""}
         ${tools.length ? `<h2>Tools</h2><div class="res-list">${tools.map((t) => `<a class="res" href="#/tools/${t.id}"><span class="lv-dot">${icon(t.icon)}</span><span><b>${esc(t.name)}</b><small>${esc(t.blurb)}</small></span>${icon("right")}</a>`).join("")}</div>` : ""}
         ${skills.length ? `<h2>Practice</h2><div class="res-list">${skills.map((k) => `<a class="res" href="#/practice/${k.id}" style="--c:${LV[k.level].color}"><span class="lv-dot">${icon("target")}</span><span><b>${esc(k.name)}</b><small>${esc(TP[k.topic].title)}</small></span>${icon("right")}</a>`).join("")}</div>` : ""}
@@ -1068,6 +1295,9 @@
     else if (a === "learn" && !b) title = learnView();
     else if (a === "topic" && TP[b]) { title = topicView(TP[b]); section = "learn"; }
     else if (a === "formulas") { title = formulasView(); section = "learn"; }
+    else if (a === "rules") { title = rulesView(); section = "learn"; }
+    else if (a === "glossary") { title = glossaryView(new URLSearchParams(query).get("q") || ""); section = "learn"; }
+    else if (a === "terms") title = termsView();
     else if (a === "tools" && b && TL[b]) title = toolView(TL[b]);
     else if (a === "tools" && !b) title = toolsView();
     else if (a === "search") title = searchView(new URLSearchParams(query).get("q") || "");

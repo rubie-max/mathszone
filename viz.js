@@ -378,6 +378,106 @@
     return R(S, grid(`repeat(${cols}, auto)`, h, "sdiv ldiv"));
   };
 
+  B.roman = ({ n, r }) => {
+    const S = Scene(), letters = [["I", 1], ["V", 5], ["X", 10], ["L", 50]];
+    const k0 = S.step(`Roman letters: I = 1, V = 5, X = 10, L = 50.`);
+    const map = [[40, "XL"], [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]];
+    const built = [];
+    let left = n;
+    map.forEach(([v, s]) => { while (left >= v) { built.push(s); left -= v; } });
+    const k1 = S.step(`Build ${n} from the largest letter that fits: ${built.join(" + ")}.`);
+    const k2 = S.step(`So ${n} = ${r}.`);
+    let h = letters.map(([s, v]) => cel(s, k0, "big k1") + cel(v, k0, "sm")).join("");
+    h += `<div class="rom-build"${A(k1)}>${built.map((s, i) => `<b${A(k1, { d: i })}>${s}</b>`).join("<i>+</i>")}</div>`;
+    return R(S, grid("repeat(4, auto)", h, "roman") + eq(`<b>${r}</b> = ${n}`, k2, "k1"));
+  };
+
+  B.shape = ({ kind, n }) => {
+    const S = Scene(), N = n, R0 = 70, cx = 160, cy = 88;
+    const pts = Array.from({ length: N }, (_, i) => {
+      const t = -Math.PI / 2 + (2 * Math.PI * i) / N;
+      return [cx + R0 * Math.cos(t), cy + R0 * Math.sin(t)];
+    });
+    const k0 = S.step(`Draw a ${kind}: a closed shape with ${N} straight sides.`);
+    const k1 = S.step(`Count the sides: ${N}.`);
+    const k2 = S.step(`Each corner is a vertex. A ${kind} has ${N} vertices too.`);
+    let g = Poly(pts, k0, "f1 ln thick");
+    pts.forEach((p, i) => {
+      const q = pts[(i + 1) % N];
+      g += Ln(p[0], p[1], q[0], q[1], k1, "k2 thick5", { draw: true, d: i });
+      g += Ci(p[0], p[1], 5, k2, "dot k3", { d: i });
+    });
+    return R(S, svg(320, 180, g) + eq(`${kind}: <b>${N}</b> sides, <b>${N}</b> vertices`, k2, "k1"));
+  };
+
+  B.symm = ({ kind, lines }) => {
+    const S = Scene(), cx = 160, cy = 90;
+    const k0 = S.step(`Draw a ${kind}.`);
+    const k1 = S.step(lines ? `A line of symmetry folds the shape onto itself. This one has ${lines}.` : `No fold matches both halves, so it has 0 lines of symmetry.`);
+    let body = "";
+    if (kind.startsWith("square")) body = Rc(cx - 50, cy - 50, 100, 100, k0, "f1 ln thick");
+    else if (kind.startsWith("rectangle")) body = Rc(cx - 70, cy - 40, 140, 80, k0, "f1 ln thick");
+    else {
+      const eq = kind.includes("equilateral"), iso = kind.includes("isosceles");
+      const pts = eq ? [[cx, cy - 58], [cx - 62, cy + 48], [cx + 62, cy + 48]]
+        : iso ? [[cx, cy - 58], [cx - 48, cy + 48], [cx + 48, cy + 48]]
+        : [[cx - 10, cy - 58], [cx - 70, cy + 48], [cx + 62, cy + 36]];
+      body = Poly(pts, k0, "f1 ln thick");
+    }
+    const folds = [];
+    if (kind.startsWith("square")) folds.push([cx, cy - 62, cx, cy + 62], [cx - 62, cy, cx + 62, cy], [cx - 50, cy - 50, cx + 50, cy + 50], [cx + 50, cy - 50, cx - 50, cy + 50]);
+    else if (kind.startsWith("rectangle")) folds.push([cx, cy - 52, cx, cy + 52], [cx - 82, cy, cx + 82, cy]);
+    else if (kind.includes("equilateral")) {
+      folds.push([cx, cy - 68, cx, cy + 56]);
+      folds.push([cx - 58, cy - 22, cx + 40, cy + 52]);
+      folds.push([cx + 58, cy - 22, cx - 40, cy + 52]);
+    } else if (kind.includes("isosceles")) folds.push([cx, cy - 68, cx, cy + 56]);
+    let g = body;
+    folds.forEach((f, i) => { g += Ln(f[0], f[1], f[2], f[3], k1, "k4 dash", { d: i }); });
+    return R(S, svg(320, 190, g) + eq(`lines of symmetry: <b>${lines}</b>`, k1, "k1"));
+  };
+
+  B.primes = ({ n, list }) => {
+    const S = Scene(), hi = Math.max(n, 10);
+    const k0 = S.step(`Write the numbers from 1 to ${hi}.`);
+    const k1 = S.step(`Cross out 1: it is not a [[primes|prime]].`);
+    const k2 = S.step(`A [[primes|prime]] has exactly two factors. Highlight ${list.join(", ")}.`);
+    let h = "";
+    for (let i = 1; i <= hi; i++) {
+      const p = list.includes(i);
+      h += cel(i, k0, `big${i === 1 ? "" : p ? " k1" : ""}`, { add: i === 1 ? [k1, "strike dim"] : !p ? [k2, "dim"] : null, h: p ? k2 : i === 1 ? k1 : null });
+    }
+    return R(S, grid("repeat(5, auto)", h, "pgrid") + eq(`primes: <b>${list.join(", ")}</b>`, k2, "k1"));
+  };
+
+  B.quadang = ({ a, b, c, d }) => {
+    const S = Scene();
+    const pts = [[40, 40], [260, 28], [280, 150], [50, 168]];
+    const k0 = S.step(`A quadrilateral has four angles. They always add to $360^\\circ$.`);
+    const k1 = S.step(`Add the three you know: $${a} + ${b} + ${c} = ${a + b + c}$.`);
+    const k2 = S.step(`The leftover is $360 - ${a + b + c} = ${d}$.`);
+    const labs = [a, b, c, "?"];
+    let g = Poly(pts, k0, "f1 ln thick");
+    pts.forEach((p, i) => {
+      const q = pts[(i + 1) % 4], r = pts[(i + 3) % 4];
+      const mx = p[0] * 0.72 + (q[0] + r[0]) * 0.14, my = p[1] * 0.72 + (q[1] + r[1]) * 0.14;
+      g += T(mx, my, i < 3 ? `${labs[i]}°` : "?", i < 3 ? k1 : k1, i === 3 ? "k4 b" : "b");
+    });
+    g += T(160, 200, `${d}°`, k2, "k1 big");
+    return R(S, svg(320, 220, g));
+  };
+
+  B.solid3d = ({ kind, F, E, V, ask }) => {
+    const S = Scene();
+    const k0 = S.step(`A ${kind} is a solid. Count faces (flat sides), edges and vertices (corners).`);
+    const kF = S.step(`Faces: ${F}.`);
+    const kE = S.step(`Edges: ${E}.`);
+    const kV = S.step(`Vertices: ${V}.`);
+    S.step(`Euler's check: $${F} + ${V} - ${E} = ${F + V - E}$.`);
+    const row = (lab, val, k, cls) => cel(lab, k, "vh") + cel(val, k, `big ${cls || ""}`);
+    return R(S, grid("auto 56px", row("faces", F, kF, ask === "F" ? "k1" : "") + row("edges", E, kE, ask === "E" ? "k1" : "") + row("vertices", V, kV, ask === "V" ? "k1" : ""), "tbl") + eq(`F + V − E = <b>${F + V - E}</b>`, kV + 1, "k1"));
+  };
+
   const ftex = (n, d) => tx(d === 1 ? `${n}` : `\\dfrac{${n}}{${d}}`);
   const frow = (bar, label, k, o) => `<div class="fr"${A(k, o)}>${bar}<span class="fl">${label}</span></div>`;
 
@@ -532,6 +632,14 @@
     ], [`(${a} + ${b}) \\times ${c} - ${d}`, `Look for the operation to do first.`]);
   };
 
+  const isPrime = (n) => {
+    n = Math.abs(n);
+    if (n < 2) return false;
+    const f = E().factorize(n);
+    return f.length === 1 && f[0][1] === 1;
+  };
+  const primeWord = (n) => (isPrime(n) ? `[[primes|${n}]]` : String(n));
+
   B.ladder = ({ a, b, mode }) => {
     const S = Scene(), side = [], rows = [[a, b]];
     let x = a, y = b;
@@ -542,18 +650,25 @@
       side.push(p); x /= p; y /= p; rows.push([x, y]);
     }
     const H = side.reduce((s, v) => s * v, 1), L = H * x * y;
-    const k0 = S.step(`Write ${a} and ${b} side by side. Divide both by a prime that goes into both.`);
+    const k0 = S.step(`Write ${a} and ${b} side by side. Divide both by a [[primes|prime]] that goes into both.`);
     const ks = side.map((p, r) => S.step(`${p} goes into both: $${rows[r][0]} \\div ${p} = ${rows[r + 1][0]}$ and $${rows[r][1]} \\div ${p} = ${rows[r + 1][1]}$.`));
-    const kStop = S.step(`No prime goes into both ${x} and ${y}, so stop.`);
+    const bothPrime = isPrime(x) && isPrime(y);
+    const kStop = S.step(`No [[primes|prime]] goes into both ${primeWord(x)} and ${primeWord(y)}, so stop.${bothPrime ? " Tap a leftover prime to learn about [[primes|prime numbers]]." : ""}`);
     const kR = mode === "hcf"
       ? S.step(`HCF = multiply the numbers down the side: $${side.join(" \\times ")} = ${H}$.`)
       : S.step(`LCM = the side numbers times the bottom numbers: $${[...side, x, y].join(" \\times ")} = ${L}$.`);
+    const leftover = (n, k, cls, o) => {
+      if (!isPrime(n)) return cel(n, k, cls, o);
+      return `<div class="vc ${cls} lad-prime"${A(k, o)}><a class="term" href="#/topic/primes">${n}</a></div>`;
+    };
     let h = "";
     rows.forEach(([u, v], r) => {
-      const k = r === 0 ? k0 : ks[r - 1], cut = r < side.length ? ks[r] : null;
+      const k = r === 0 ? k0 : ks[r - 1], cut = r < side.length ? ks[r] : null, last = r === rows.length - 1;
       h += r < side.length ? cel(side[r], ks[r], "lad-p k1", { h: kR }) : cel("", null, "lad-p");
-      h += cel(u, k, "big lad-n", { add: cut != null ? [cut, "cut cutl"] : null, h: r === rows.length - 1 ? (mode === "lcm" ? [kStop, kR] : kStop) : null });
-      h += cel(v, k, "big lad-n", { add: cut != null ? [cut, "cut"] : null, h: r === rows.length - 1 ? (mode === "lcm" ? [kStop, kR] : kStop) : null });
+      const oU = { add: cut != null ? [cut, "cut cutl"] : null, h: last ? (mode === "lcm" ? [kStop, kR] : kStop) : null };
+      const oV = { add: cut != null ? [cut, "cut"] : null, h: last ? (mode === "lcm" ? [kStop, kR] : kStop) : null };
+      h += last ? leftover(u, k, "big lad-n", oU) : cel(u, k, "big lad-n", oU);
+      h += last ? leftover(v, k, "big lad-n", oV) : cel(v, k, "big lad-n", oV);
     });
     return R(S, grid("auto 64px 64px", h, "ladder") + eq(mode === "hcf" ? `HCF = ${side.join(" × ")} = <b>${H}</b>` : `LCM = ${[...side, x, y].join(" × ")} = <b>${L}</b>`, kR, "k1"));
   };
@@ -1623,6 +1738,239 @@
     const chips = items.map((s, i) => chip(tx(s), k0, i === idx ? "k1" : "", { d: i, h: i === idx ? [k1, k1 + 1] : null, add: i !== idx ? [k1, "dim"] : null })).join(kind === 0 || kind === 3 ? "<i>+</i>" : "");
     return R(S, `<div class="lt">${chips}<i>⋯</i></div>${eq(tx(`${val}`), k1 + 1, "k1 big")}`);
   };
+  /* ================= NCERT extras ================= */
+  B.pattern = ({ list, next }) => {
+    const S = Scene(), d = list[1] - list[0];
+    const k0 = S.step(`Here is the pattern: ${list.join(", ")}, …`);
+    const k1 = S.step(`Find the gap between neighbours: each term is ${d} more than the one before.`);
+    const k2 = S.step(`Use the rule once more: $${list[list.length - 1]} + ${d} = ${next}$.`);
+    let h = "";
+    list.forEach((v, i) => {
+      if (i) h += `<i${A(k1, { d: i })}>+${d}</i>`;
+      h += chip(v, k0, "big", { d: i });
+    });
+    h += `<i${A(k2)}>+${d}</i>` + chip(next, k2, "big k1", { h: k2 });
+    return R(S, `<div class="lt">${h}</div>` + eq(`next term: <b>${next}</b>`, k2, "k1"));
+  };
+
+  B.picto = ({ rows, each, i, j }) => {
+    const S = Scene();
+    const k0 = S.step(`In this pictograph each symbol stands for ${each}.`);
+    const ki = S.step(`${rows[i][0]}: count the symbols. There are ${rows[i][1]}, so $${rows[i][1]} \\times ${each} = ${rows[i][1] * each}$.`);
+    let kj = null;
+    if (j != null) {
+      kj = S.step(`${rows[j][0]}: ${rows[j][1]} symbols, so $${rows[j][1]} \\times ${each} = ${rows[j][1] * each}$.`);
+      S.step(`Difference: $${rows[i][1] * each} - ${rows[j][1] * each} = ${(rows[i][1] - rows[j][1]) * each}$.`);
+    }
+    let h = "";
+    rows.forEach(([name, n, sym], r) => {
+      const k = r === i ? ki : r === j ? kj : null;
+      h += cel(name, k0, "vh", { h: k }) + cel(`<span class="pic">${Array.from({ length: n }, () => `<i>${sym}</i>`).join("")}</span>`, k0, "pic-c", { h: k, d: r });
+      h += cel(k == null ? "" : n * each, k, "big k1");
+    });
+    return R(S, `<p class="pic-key"${A(k0)}>Key: <b>${rows[0][2]}</b> = ${each}</p>` + grid("auto 1fr auto", h, "tbl picto"));
+  };
+
+  const ANGLE_KIND = (a) => (a < 90 ? "acute" : a === 90 ? "right" : a < 180 ? "obtuse" : a === 180 ? "straight" : a < 360 ? "reflex" : "complete");
+  B.angkind = ({ a }) => {
+    const S = Scene(), cx = 160, cy = 104, L = 92, rad = (a * Math.PI) / 180, kind = ANGLE_KIND(a);
+    const rule = { acute: "less than 90°", right: "exactly 90°", obtuse: "between 90° and 180°", straight: "exactly 180°", reflex: "between 180° and 360°", complete: "exactly 360°" }[kind];
+    const k0 = S.step(`Start with one arm pointing right. Turn the other arm through ${a}°.`);
+    const k1 = S.step(`Compare with the two benchmarks: a right angle is 90° (a quarter turn) and a straight angle is 180° (a half turn).`);
+    const k2 = S.step(`${a}° is ${rule}, so it is ${/^[ao]/.test(kind) ? "an" : "a"} ${kind} angle.`);
+    let g = Ln(cx, cy, cx + L, cy, k0, "k0 thick");
+    g += Ln(cx, cy, cx + L * Math.cos(rad), cy - L * Math.sin(rad), k0, "k1 thick", { draw: true });
+    g += a === 90 ? rightMark(cx, cy, 1, 0, 0, -1, 16, k0) : a >= 360 ? Ci(cx, cy, 30, k0, "f1 ln thin") : P(sector(cx, cy, 30, 0, rad), k0, "f1 ln thin");
+    const mid = rad / 2, lr = a > 200 ? 46 : 52;
+    g += T(cx + lr * Math.cos(mid), cy - lr * Math.sin(mid), `${a}°`, k0, "k1 b");
+    g += Ln(cx, cy, cx, cy - L * 0.8, k1, "k3 dash") + T(cx + 6, cy - L * 0.8 - 8, "90°", k1, "k3 sm b", { a: "start" });
+    g += Ln(cx, cy, cx - L * 0.8, cy, k1, "k4 dash") + T(cx - L * 0.8, cy + 14, "180°", k1, "k4 sm b");
+    g += Ci(cx, cy, 4, k0, "dot k0");
+    return R(S, svg(320, 210, g) + eq(`${a}° is <b>${kind}</b>`, k2, "k1"));
+  };
+
+  B.geofig = ({ kind }) => {
+    const S = Scene(), y = 70, x0 = 60, x1 = 260;
+    const D = (x, yy, k, lab, o) => Ci(x, yy, 4.5, k, "dot k1", o) + (lab ? T(x, yy - 14, lab, k, "k1 b") : "");
+    const both = (xa, ya, xb, yb, k, cls) => Ln(xa, ya, xb, yb, k, cls || "k0 thick") + G(head(xb, yb, Math.atan2(yb - ya, xb - xa), "k0") + head(xa, ya, Math.atan2(ya - yb, xa - xb), "k0"), k);
+    let g = "", cap1 = "", cap2 = "", name = "";
+    if (kind === "segment") {
+      g = Ln(x0, y, x1, y, 0, "k0 thick", { draw: true }) + D(x0, y, 0, "A") + D(x1, y, 0, "B");
+      cap1 = "It starts at A and stops at B: two end points, so you can measure its length.";
+      name = "a line segment, written $\\overline{AB}$";
+    } else if (kind === "ray") {
+      g = Ln(x0, y, x1, y, 0, "k0 thick", { draw: true }) + G(head(x1 + 6, y, 0, "k0"), 0) + D(x0, y, 0, "A") + D(170, y, 0, "B");
+      cap1 = "It starts at A and goes on forever through B: one end point only.";
+      name = "a ray, written $\\overrightarrow{AB}$";
+    } else if (kind === "line") {
+      g = both(x0 - 20, y, x1 + 20, y, 0) + D(110, y, 0, "A") + D(210, y, 0, "B");
+      cap1 = "Arrows at both ends: it goes on forever both ways, with no end points.";
+      name = "a line, written $\\overleftrightarrow{AB}$";
+    } else if (kind === "parallel") {
+      g = both(x0, 40, x1, 40, 0) + both(x0, 100, x1, 100, 0) + T(x1 + 18, 40, "l", 0, "i b") + T(x1 + 18, 100, "m", 0, "i b");
+      g += Ln(120, 40, 120, 100, 1, "k3 dash") + Ln(200, 40, 200, 100, 1, "k3 dash") + T(160, 70, "same gap", 1, "k3 sm b");
+      cap1 = "The gap between them is the same everywhere, so they never meet.";
+      name = "parallel lines, written $l \\parallel m$";
+    } else if (kind === "perpendicular") {
+      g = both(x0, 100, x1, 100, 0) + both(160, 18, 160, 132, 0) + rightMark(160, 100, 1, 0, 0, -1, 14, 1) + T(178, 84, "90°", 1, "k3 b", { a: "start" });
+      cap1 = "They cross and make a right angle, 90°.";
+      name = "perpendicular lines, written $l \\perp m$";
+    } else {
+      g = both(70, 24, 250, 116, 0) + both(70, 116, 250, 24, 0) + D(160, 70, 1, "O");
+      cap1 = "They cross at exactly one point, O, the point of intersection.";
+      name = "intersecting lines";
+    }
+    S.step(`Look at the figure.`);
+    S.step(cap1);
+    S.step(`So it is ${name}.`);
+    return R(S, svg(320, 142, g));
+  };
+
+  B.congr = ({ rule }) => {
+    const S = Scene();
+    const base = rule === "RHS" ? [[22, 120], [22, 26], [132, 120]] : [[18, 120], [70, 30], [138, 120]];
+    const P2 = base.map(([x, y]) => [x + 164, y]);
+    const names = [["A", "B", "C"], ["P", "Q", "R"]];
+    const spec = { SSS: { s: [0, 1, 2], a: [] }, SAS: { s: [0, 2], a: [0] }, ASA: { s: [0], a: [0, 1] }, RHS: { s: [1, 2], a: [], r: 0 } }[rule];
+    const said = {
+      SSS: "all three sides are equal in pairs",
+      SAS: "two sides and the angle between them are equal",
+      ASA: "two angles and the side between them are equal",
+      RHS: "both have a right angle, and the hypotenuse and one other side are equal",
+    }[rule];
+    const k0 = S.step(`Two triangles: △ABC and △PQR.`);
+    const k1 = S.step(`Matching marks show equal parts: ${said}.`);
+    S.step(`That is the ${rule} rule, so △ABC ≅ △PQR (they are congruent: same shape and same size).`);
+    const draw = (pts, nm) => {
+      let g = Poly(pts, k0, "f0 ln thick");
+      pts.forEach((p, i) => {
+        const c = pts.reduce((s, q) => [s[0] + q[0] / 3, s[1] + q[1] / 3], [0, 0]);
+        const dx = p[0] - c[0], dy = p[1] - c[1], m = Math.hypot(dx, dy);
+        g += T(p[0] + (dx / m) * 13, p[1] + (dy / m) * 13, nm[i], k0, "b");
+      });
+      spec.s.forEach((si, n) => {
+        const p = pts[si], q = pts[(si + 1) % 3], mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2;
+        const ux = (q[0] - p[0]) / Math.hypot(q[0] - p[0], q[1] - p[1]), uy = (q[1] - p[1]) / Math.hypot(q[0] - p[0], q[1] - p[1]);
+        g += Ln(p[0], p[1], q[0], q[1], k1, `k${n + 1} thick5`);
+        for (let t = 0; t <= n; t++) {
+          const ox = mx + ux * (t - n / 2) * 6, oy = my + uy * (t - n / 2) * 6;
+          g += Ln(ox - uy * 6, oy + ux * 6, ox + uy * 6, oy - ux * 6, k1, `k${n + 1} thick`);
+        }
+      });
+      const ang = (u, v) => Math.atan2(-(v[1] - u[1]), v[0] - u[0]);
+      spec.a.forEach((vi, n) => {
+        const p = pts[vi], q = pts[(vi + 1) % 3], r = pts[(vi + 2) % 3];
+        let t0 = ang(p, q), t1 = ang(p, r), d = t1 - t0;
+        while (d > Math.PI) d -= 2 * Math.PI;
+        while (d <= -Math.PI) d += 2 * Math.PI;
+        if (d < 0) { t0 = t1; d = -d; }
+        g += P(sector(p[0], p[1], 18 + n * 4, t0, t0 + d), k1, `f${n + 3} ln thin`);
+      });
+      if (spec.r != null) {
+        const p = pts[spec.r];
+        g += rightMark(p[0], p[1], 1, 0, 0, -1, 12, k1);
+      }
+      return g;
+    };
+    return R(S, svg(320, 150, draw(base, names[0]) + draw(P2, names[1])) + eq(`rule: <b>${rule}</b>`, k1 + 1, "k1"));
+  };
+
+  B.triineq = ({ a, b, c }) => {
+    const S = Scene();
+    const s = [a, b].concat(c == null ? [] : [c]).sort((x, y) => x - y);
+    const [p, q] = c == null ? [a, b] : [s[0], s[1]], big = c == null ? null : s[2];
+    const sc = 250 / Math.max(p + q, big || 0), x0 = 35;
+    const k0 = S.step(`Lay the two ${c == null ? "" : "shorter "}sides end to end: $${p} + ${q} = ${p + q}$.`);
+    let g = Rc(x0, 30, p * sc, 18, k0, "f1 ln") + Rc(x0 + p * sc, 30, q * sc, 18, k0, "f2 ln");
+    g += T(x0 + (p * sc) / 2, 39, p, k0, "b") + T(x0 + p * sc + (q * sc) / 2, 39, q, k0, "b");
+    if (c == null) {
+      S.step(`The third side must be shorter than ${p + q}, or the two ends could never meet to close the triangle.`);
+      S.step(`It must also be longer than the difference $${Math.max(p, q)} - ${Math.min(p, q)} = ${Math.abs(p - q)}$.`);
+      g += T(x0 + ((p + q) * sc) / 2, 72, `third side < ${p + q}`, 1, "k3 b") + T(x0 + ((p + q) * sc) / 2, 96, `third side > ${Math.abs(p - q)}`, 2, "k4 b");
+      return R(S, svg(320, 112, g));
+    }
+    const ok = p + q > big;
+    const k1 = S.step(`Compare with the longest side, ${big}.`);
+    S.step(ok ? `$${p + q} > ${big}$, so the short sides reach past the long one: a triangle can be made.` : `$${p + q} \\le ${big}$, so the short sides can't reach to close the shape: no triangle.`);
+    g += Rc(x0, 70, big * sc, 18, k1, "f3 ln") + T(x0 + (big * sc) / 2, 79, big, k1, "b");
+    return R(S, svg(320, 104, g) + eq(ok ? "triangle: <b>yes</b>" : "triangle: <b>no</b>", k1 + 1, "k1"));
+  };
+
+  B.pie = ({ parts, i }) => {
+    const S = Scene(), N = parts.reduce((s, p) => s + p[1], 0), cx = 110, cy = 100, Rr = 82;
+    const k0 = S.step(`Add all the parts: $${parts.map((p) => p[1]).join(" + ")} = ${N}$.`);
+    const k1 = S.step(`A full circle is $360^\\circ$, shared out in the same way as the ${N}.`);
+    const deg = (parts[i][1] / N) * 360;
+    S.step(`${parts[i][0]}: $\\frac{${parts[i][1]}}{${N}} \\times 360^\\circ = ${nm(deg)}^\\circ$.`);
+    let g = "", t = Math.PI / 2;
+    parts.forEach(([name, v], j) => {
+      const w = (v / N) * 2 * Math.PI, mid = t - w / 2;
+      g += P(sector(cx, cy, Rr, t - w, t), k1, `f${(j % 4) + 1} ln`, { h: j === i ? k1 + 1 : null });
+      if (j === i) g += T(cx + Rr * 0.6 * Math.cos(mid), cy - Rr * 0.6 * Math.sin(mid), `${nm((v / N) * 360)}°`, k1 + 1, "b");
+      g += Rc(212, 30 + j * 24, 12, 12, k0, `f${(j % 4) + 1} ln`) + T(232, 36 + j * 24, `${name} ${v}`, k0, j === i ? "k1 b" : "", { a: "start" });
+      t -= w;
+    });
+    g = Ci(cx, cy, Rr, k0, "ln thick") + g;
+    return R(S, svg(320, 200, g));
+  };
+
+  B.divis = ({ n, k, yes }) => {
+    const S = Scene(), ds = String(n).split(""), sum = ds.reduce((s, d) => s + +d, 0), L = ds.length;
+    const rule = { 2: "the last digit is even (0, 2, 4, 6 or 8)", 3: "the digit sum is divisible by 3", 4: "the number made by the last two digits is divisible by 4", 5: "the last digit is 0 or 5", 9: "the digit sum is divisible by 9", 10: "the last digit is 0" }[k];
+    const k0 = S.step(`Rule for ${k}: a number is divisible by ${k} if ${rule}.`);
+    let k1, mark;
+    if (k === 3 || k === 9) { k1 = S.step(`Add the digits: $${ds.join(" + ")} = ${sum}$.`); mark = () => true; }
+    else if (k === 4) { k1 = S.step(`The last two digits make ${+ds.slice(-2).join("")}.`); mark = (j) => j >= L - 2; }
+    else { k1 = S.step(`The last digit is ${ds[L - 1]}.`); mark = (j) => j === L - 1; }
+    S.step(`${yes ? "It passes the test" : "It fails the test"}, so ${n} is ${yes ? "" : "not "}divisible by ${k}.`);
+    const h = ds.map((d, j) => cel(d, k0, `big${mark(j) ? " k1" : ""}`, { h: mark(j) ? k1 : null, add: mark(j) ? null : [k1, "dim"], d: j })).join("");
+    const tail = k === 3 || k === 9 ? eq(`digit sum <b>${sum}</b>`, k1, "k1") : "";
+    return R(S, grid(`repeat(${L}, auto)`, h, "pv") + tail);
+  };
+
+  B.invprop = ({ w1, d1, w2, unit, who }) => chainOf([
+    [`${w1} \\times ${d1} = ${hc(0, w1 * d1)}`, `Find the total work: ${who} × ${unit}.`],
+    [`\\frac{${hc(0, w1 * d1)}}{${w2}} = ${hc(2, (w1 * d1) / w2)}`, `Share the same total among ${w2} ${who}.`],
+  ], [`${w1}\\ \\text{${who}} \\to ${d1}\\ \\text{${unit}}`, `More ${who} means fewer ${unit}: this is inverse proportion.`]);
+
+  B.sector = ({ r, th, mode, val }) => {
+    const S = Scene(), cx = 120, cy = 104, R0 = 78, rad = (th * Math.PI) / 180;
+    const k0 = S.step(`A circle of radius ${r} cm. The sector has angle ${th}°.`);
+    const k1 = S.step(`The sector is $\\frac{${th}}{360}$ of the whole circle.`);
+    const k2 = S.step(mode === "area" ? `Area $= \\frac{${th}}{360} \\times \\pi r^2 = \\frac{${th}}{360} \\times \\frac{22}{7} \\times ${r}^2$.` : `Arc length $= \\frac{${th}}{360} \\times 2\\pi r = \\frac{${th}}{360} \\times 2 \\times \\frac{22}{7} \\times ${r}$.`);
+    S.step(`$= ${nm(val)}$ ${mode === "area" ? "cm²" : "cm"}.`);
+    let g = Ci(cx, cy, R0, k0, "ln thick");
+    g += mode === "area" ? P(sector(cx, cy, R0, 0, rad), k1, "f1 ln thick") : P(arcPath(cx, cy, R0, 0, rad), k1, "k3 thick5", { draw: true });
+    g += Ln(cx, cy, cx + R0, cy, k0, "k1 thick") + Ln(cx, cy, cx + R0 * Math.cos(rad), cy - R0 * Math.sin(rad), k0, "k1 thick");
+    g += T(cx + R0 / 2, cy + 12, `r = ${r}`, k0, "k1 b") + T(cx + 24 * Math.cos(rad / 2), cy - 24 * Math.sin(rad / 2), `${th}°`, k0, "b");
+    g += Ci(cx, cy, 3, k0, "dot k0") + T(270, 104, `${nm(val)} ${mode === "area" ? "cm²" : "cm"}`, k2 + 1, "k1 big");
+    return R(S, svg(320, 208, g));
+  };
+
+  const IQ = { "<": "<", ">": ">", "<=": "\\le", ">=": "\\ge" };
+  const FLIP = { "<": ">", ">": "<", "<=": ">=", ">=": "<=" };
+  B.ineq = ({ a, b, c, op, x }) => {
+    const S = Scene(), res = a < 0 ? FLIP[op] : op;
+    const lhs = `${a === 1 ? "" : a === -1 ? "-" : a}x ${b < 0 ? "-" : "+"} ${Math.abs(b)}`;
+    const k0 = S.step(`Solve $${lhs} ${IQ[op]} ${c}$ like an equation, keeping the sign.`);
+    const k1 = S.step(`${b > 0 ? "Subtract" : "Add"} ${Math.abs(b)} on both sides: $${a === 1 ? "" : a === -1 ? "-" : a}x ${IQ[op]} ${c - b}$.`);
+    const k2 = S.step(a < 0 ? `Divide by $${a}$. Dividing by a negative number flips the sign: $x ${IQ[res]} ${x}$.` : a === 1 ? `So $x ${IQ[res]} ${x}$.` : `Divide by ${a}: $x ${IQ[res]} ${x}$.`);
+    const k3 = S.step(`On the number line: ${res.includes("=") ? "a filled dot (the number is included)" : "an open dot (the number is not included)"}, then shade ${res[0] === "<" ? "to the left" : "to the right"}.`);
+    const X = (v) => 160 + (v - x) * 24, y = 70;
+    let g = Ln(20, y, 300, y, k0, "ax thick");
+    for (let v = x - 5; v <= x + 5; v++) g += Ln(X(v), y - 5, X(v), y + 5, k0, "ln thin") + T(X(v), y + 18, v, k0, v === x ? "b" : "tk");
+    const left = res[0] === "<";
+    g += Ar(X(x), y, left ? 20 : 300, y, k3, "k1 thick5");
+    g += Ci(X(x), y, 6, k3, res.includes("=") ? "dot k1" : "hole");
+    return R(S, svg(320, 100, g) + eq(tx(`x ${IQ[res]} ${x}`), k2, "k1"));
+  };
+
+  B.invtrig = ({ f, vt, ans, range, deg }) => chainOf([
+    [`\\${f}^{-1}\\left(${vt}\\right) = \\theta \\iff \\${f}\\theta = ${vt}`, `Ask: which angle has $\\${f}\\theta = ${vt}$?`],
+    [`\\theta \\in ${range}`, `It must lie in the principal value range of $\\${f}^{-1}$.`],
+    [`\\theta = ${hc(2, ans)}\\ (= ${deg}^\\circ)`, `The only such angle is $${ans}$.`],
+  ]);
+
   /* ---------- Player ---------- */
   function html(it) {
     if (!it || !it.viz || !B[it.viz.t] || !U()) return "";
