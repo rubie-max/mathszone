@@ -2,7 +2,8 @@
   "use strict";
 
   const U = window.MZU;
-  const { E, LEVELS, TOPICS, SKILLS, LV, TP, SK, app, store, esc, rich, tex, icon, progress, back, stageChips, myLevel, DAILY } = U;
+  const { E, LEVELS, TOPICS, SKILLS, LV, TP, SK, CLASSES, CL, app, store, esc, rich, tex, icon, progress, back, stageChips, classChips, myLevel, myClass, DAILY } = U;
+  const classSkills = (c) => SKILLS.filter((s) => s.cls === c.id);
   const make = window.MZ_MAKE, seeded = window.MZ_SEEDED, shuffle = window.MZ_SHUFFLE, check = window.MZ_CHECK;
   const pick = (a) => a[Math.floor(Math.random() * a.length)];
   const $ = (id) => document.getElementById(id);
@@ -731,7 +732,7 @@
   };
 
   function dailyCard() {
-    const lv = myLevel(), done = P.daily && P.daily.date === today();
+    const lv = myClass(), done = P.daily && P.daily.date === today();
     const d = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
     return `<a class="daily-card${done ? " done" : ""}" href="#/daily">
       <span class="dc-txt"><small>${icon("calendar")} Daily challenge · ${esc(d)}</small>
@@ -742,7 +743,7 @@
 
   function classPicker() {
     return `<section class="card class-pick"><h2>Which class are you in?</h2><p class="muted">We'll choose questions at the right level. You can change this any time on the Me page.</p>
-      <div class="class-grid">${LEVELS.map((l) => `<button type="button" data-cls="${l.id}" style="--c:${l.color}"><span class="lv-dot">${icon(l.icon)}</span><b>${esc(l.range)}</b><small>${esc(l.name)}</small></button>`).join("")}</div></section>`;
+      <div class="class-grid">${CLASSES.map((c) => `<button type="button" data-cls="${c.id}" style="--c:${c.color}"><span class="lv-dot">${c.num == null ? icon(c.icon) : c.num}</span><b>${esc(c.name)}</b><small>${esc(c.stageName)}</small></button>`).join("")}</div></section>`;
   }
   function wireClassPicker(after) {
     app.querySelectorAll("[data-cls]").forEach((b) => b.addEventListener("click", () => { store.set("cls", b.dataset.cls); after ? after() : U.go(location.hash || "#/"); }));
@@ -811,15 +812,16 @@
     return "Practice";
   }
 
-  function topicsView(lv) {
-    lv = lv || myLevel() || LEVELS[0];
-    const ts = TOPICS.filter((t) => t.level === lv.id && t.skills.length);
+  function topicsView(c) {
+    c = c || myClass() || CLASSES[0];
+    const ts = TOPICS.filter((t) => t.cls === c.id && t.skills.length);
     app.innerHTML = `
       ${back("#/practice", "Practice")}
       <h1 class="page-title">Topic practice</h1>
       <p class="lead small">Pick a skill. Stars show how well you know it: one for 50% accuracy, three for 90% over 20 questions.</p>
-      ${stageChips(lv, (l) => `#/topics/${l.id}`)}
-      ${ts.map((t) => `<section class="skill-group" style="--c:${lv.color}">
+      ${classChips(c, (x) => `#/topics/${x.id}`)}
+      ${ts.length ? "" : `<p class="muted small-p">No practice chapters in ${esc(c.name)} yet — try another class above.</p>`}
+      ${ts.map((t) => `<section class="skill-group" style="--c:${c.color}">
         <div class="sg-head"><h3>${esc(t.title)}</h3><a href="#/topic/${t.id}">${icon("book")} Revise</a></div>
         <div class="row-list">${t.skills.map((id) => {
           const s = SK[id], a = acc(id);
@@ -834,9 +836,9 @@
     const typeable = Array.from({ length: 6 }, () => s.gen()).some((it) => it.ans);
     let n = store.get("cnt", 10), mode = typeable ? P.mode : "mcq";
     app.innerHTML = `
-      ${back("#/topics/" + lv.id, "Topic practice")}
+      ${back("#/topics/" + s.cls, "Topic practice")}
       <section class="setup" style="--c:${lv.color}">
-        <div class="setup-head"><span class="lv-ic big">${icon(lv.icon)}</span><div><small>${esc(lv.range)} · ${esc(t.title)}</small><h1>${esc(s.name)}</h1></div></div>
+        <div class="setup-head"><span class="lv-ic big">${icon(lv.icon)}</span><div><small>${esc(CL[s.cls].name)} · ${esc(t.title)}</small><h1>${esc(s.name)}</h1></div></div>
         <div class="mini-stats">
           <div><small>Best round</small><b>${b != null ? b + "%" : "–"}</b></div>
           <div><small>Accuracy</small><b>${a != null ? a + "%" : "–"}</b></div>
@@ -974,7 +976,7 @@
       ${modeHero("speed")}
       <h2 class="group-h">Choose a set</h2>
       <div class="choice-list" id="sets" role="radiogroup">${SPEED.map((s) => `<button type="button" class="choice" role="radio" data-id="${s.id}" aria-checked="${s.id === sel}">
-        <span class="radio"></span><span class="ch-txt"><b>${esc(s.name)}</b><small>${esc(s.id === "class" && myLevel() ? myLevel().range : s.desc)}</small></span><span class="ch-best">${P.best["speed:" + s.id] ? `${icon("trophy")} ${P.best["speed:" + s.id]}` : ""}</span></button>`).join("")}</div>
+        <span class="radio"></span><span class="ch-txt"><b>${esc(s.name)}</b><small>${esc(s.id === "class" && myClass() ? myClass().name : s.desc)}</small></span><span class="ch-best">${P.best["speed:" + s.id] ? `${icon("trophy")} ${P.best["speed:" + s.id]}` : ""}</span></button>`).join("")}</div>
       <button type="button" class="btn primary block lg" id="go">${icon("bolt")} Start · 60 seconds</button>`;
     $("sets").addEventListener("click", (e) => {
       const b = e.target.closest("[data-id]");
@@ -1038,14 +1040,14 @@
 
   function testBuilder(qs) {
     const pre = qs.get("topic");
-    const lv = LV[qs.get("stage")] || (pre && TP[pre] && LV[TP[pre].level]) || myLevel() || LEVELS[0];
-    const ts = TOPICS.filter((t) => t.level === lv.id && t.skills.length);
+    const cl = CL[qs.get("cls")] || (qs.get("stage") && CLASSES.find((c) => c.stage === qs.get("stage"))) || (pre && TP[pre] && CL[TP[pre].cls]) || myClass() || CLASSES[0];
+    const ts = TOPICS.filter((t) => t.cls === cl.id && t.skills.length);
     let n = store.get("testN", 10), timer = store.get("testT", 60);
     app.innerHTML = `
       ${back("#/practice", "Practice")}
       ${modeHero("test")}
-      <h2 class="group-h">1. Stage</h2>
-      ${stageChips(lv, (l) => `#/test?stage=${l.id}`)}
+      <h2 class="group-h">1. Class</h2>
+      ${classChips(cl, (c) => `#/test?cls=${c.id}`)}
       <div class="group-h row"><h2>2. Chapters</h2><button type="button" class="link-btn" id="all">Select all</button></div>
       <div class="check-list" id="chk">${ts.map((t) => `<label class="check"><input type="checkbox" value="${t.id}" ${t.id === pre ? "checked" : ""}><span class="box">${icon("check")}</span><span class="ck-txt"><b>${esc(t.title)}</b><small>${t.skills.length} question type${t.skills.length > 1 ? "s" : ""}</small></span></label>`).join("")}</div>
       <h2 class="group-h">3. Settings</h2>
@@ -1067,7 +1069,7 @@
       const tp = chosen();
       if (!tp.length) return;
       const list = tp.flatMap((t) => t.skills.map((id) => SK[id]));
-      const title = tp.length === 1 ? tp[0].title : `${lv.range} · ${tp.length} chapters`;
+      const title = tp.length === 1 ? tp[0].title : `${cl.name} · ${tp.length} chapters`;
       const start = () => exam({
         title, color: MODES.test.color, back: location.hash, items: batch(list, n), time: timer ? timer * n : 0, restart: start, againLabel: "New test, same chapters",
         onEnd(r) { const p = Math.round((100 * r.score) / r.n); r.title = `Grade ${grade(p)}`; r.sub = `${r.score} of ${r.n} correct · ${esc(title)}`; },
@@ -1133,7 +1135,7 @@
 
   function me() {
     const L = levelOf(P.xp), into = P.xp - xpFor(L), span = xpFor(L + 1) - xpFor(L);
-    const lv = myLevel();
+    const lv = myLevel(), cls = myClass();
     const weeks = 16, start = new Date();
     start.setDate(start.getDate() - ((start.getDay() + 6) % 7) - (weeks - 1) * 7);
     const cells = [];
@@ -1149,7 +1151,7 @@
       <section class="profile card">
         <span class="lvl-ring">${ring((into / span) * 100)}<b>${L}</b><small>Level</small></span>
         <div class="pf-txt"><b>${P.xp.toLocaleString("en-IN")} XP</b><span class="muted">${(xpFor(L + 1) - P.xp).toLocaleString("en-IN")} XP to level ${L + 1}</span>${progress((into / span) * 100, "Level progress")}
-          <button type="button" class="chip lv" id="clsBtn" style="--c:${lv ? lv.color : "var(--accent)"}">${icon(lv ? lv.icon : "user")} ${lv ? esc(lv.range) : "Choose your class"}</button></div>
+          <button type="button" class="chip lv" id="clsBtn" style="--c:${cls ? cls.color : "var(--accent)"}">${icon(cls ? cls.icon : "user")} ${cls ? esc(cls.name) : "Choose your class"}</button></div>
       </section>
       <div class="stat-tiles">
         <div><span style="--c:#f97316">${icon("flame")}</span><b>${streak()}</b><small>Day streak</small></div>
@@ -1281,7 +1283,7 @@
     switch (a) {
       case "": return R(home(), "home");
       case "practice": return b ? (SK[b] ? R(skillSetup(SK[b])) : null) : R(hub());
-      case "topics": return R(topicsView(LV[b]));
+      case "topics": return R(topicsView(CL[b] || (LV[b] && CLASSES.find((c) => c.stage === b))));
       case "gallery": return R(gallery(), "learn");
       case "quiz": return TP[b] && TP[b].skills.length ? R(topicQuiz(TP[b]), "learn") : null;
       case "quick": return R(quick(), "home");

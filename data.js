@@ -1606,6 +1606,49 @@
       }, { tool: "stats" }),
   ];
 
+  /* Individual classes shown in the UI. Each one belongs to a stage (above),
+     which stays the backbone for colours, difficulty and progression. */
+  window.MZ_CLASSES = [
+    { id: "c1", num: 1, stage: "foundation" },
+    { id: "c2", num: 2, stage: "foundation" },
+    { id: "c3", num: 3, stage: "foundation" },
+    { id: "c4", num: 4, stage: "foundation" },
+    { id: "c5", num: 5, stage: "foundation" },
+    { id: "c6", num: 6, stage: "middle" },
+    { id: "c7", num: 7, stage: "middle" },
+    { id: "c8", num: 8, stage: "middle" },
+    { id: "c9", num: 9, stage: "secondary" },
+    { id: "c10", num: 10, stage: "secondary" },
+    { id: "c11", num: 11, stage: "senior" },
+    { id: "c12", num: 12, stage: "senior" },
+    { id: "ug", num: null, name: "Undergraduate", range: "College and beyond", stage: "college" },
+  ];
+
+  /* Which class each topic sits in (standard NCERT/CBSE sequence). Every
+     college topic falls under "ug". Edit a number to move a chapter. */
+  const CLS = {
+    // Foundation — Class 1 to 5
+    shapes: 1, patterns: 1,
+    "place-value": 2, "add-sub": 2, money: 2,
+    "mult-div": 3, "time-calendar": 3, "data-handling": 3,
+    measurement: 4, "maps-directions": 4, roman: 4, "angles-turns": 4,
+    fractions: 5, decimals: 5, "perimeter-area": 5, symmetry: 5,
+    // Middle — Class 6 to 8
+    integers: 6, primes: 6, "factors-multiples": 6, "geometry-basics": 6, "ratio-proportion": 6, "number-systems": 6, "data-basic": 6,
+    rationals: 7, exponents: 7, "lines-angles": 7, congruence: 7, percentages: 7, "profit-interest": 7, "linear-one": 7,
+    "squares-roots": 8, "algebra-identities": 8, quads: 8, constructions: 8, solids: 8, "mensuration-2d": 8, "graphs-pie": 8,
+    // Secondary — Class 9 to 10
+    euclid: 9, propositions: 9, algorithms: 9, "surface-volume": 9, "statistics-grouped": 9, "probability-basic": 9, coordinate: 9, polynomials: 9,
+    "real-numbers": 10, "linear-two": 10, quadratic: 10, ap: 10, triangles: 10, circles: 10, "circle-areas": 10, "trig-basic": 10, heights: 10,
+    // Senior — Class 11 to 12
+    sets: 11, "trig-functions": 11, complex: 11, inequalities: 11, pnc: 11, binomial: 11, sequences: 11, "lines-conics": 11, "limits-derivatives": 11, dispersion: 11,
+    "inverse-trig": 12, matrices: 12, continuity: 12, "app-derivatives": 12, integrals: 12, "app-integrals": 12, "diff-eq": 12, vectors: 12, "probability-adv": 12, lpp: 12,
+  };
+  window.MZ_TOPICS.forEach((t) => {
+    t.cls = t.level === "college" ? "ug" : "c" + (CLS[t.id] || 1);
+    if (t.level !== "college" && !CLS[t.id]) console.warn("No class mapped for topic:", t.id);
+  });
+
   /* [word, meaning, topic id] — the topic id is where "Learn more" goes. */
   window.MZ_GLOSSARY = [
     ["Acute angle", R`An angle less than $90^\circ$.`, "angles-turns"],

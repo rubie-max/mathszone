@@ -300,8 +300,9 @@ h3 { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; margin: 18px 0 
 .f-group h2 { margin-top: 24px; }
 
 /* ---------- Practice ---------- */
-.lv-dot { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 11px; color: var(--c, var(--accent)); background: color-mix(in srgb, var(--c, var(--accent)) 14%, var(--surface)); }
+.lv-dot { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 11px; color: var(--c, var(--accent)); background: color-mix(in srgb, var(--c, var(--accent)) 14%, var(--surface)); font-weight: 800; font-size: 15px; }
 .lv-dot .ic { width: 18px; height: 18px; }
+.lv-ic.big { font-size: 26px; font-weight: 800; }
 .big-ic { display: inline-grid; place-items: center; width: 70px; height: 70px; border-radius: 22px; color: #fff; background: var(--hero); box-shadow: 0 14px 30px -14px #6d4aff; }
 .big-ic .ic { width: 34px; height: 34px; }
 

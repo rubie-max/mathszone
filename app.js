@@ -7,7 +7,14 @@
 
   const byId = (list) => Object.fromEntries(list.map((x) => [x.id, x]));
   const LV = byId(LEVELS), TP = byId(TOPICS), SK = byId(SKILLS);
-  SKILLS.forEach((s) => { s.level = TP[s.topic].level; });
+  const CLASSES = window.MZ_CLASSES, CL = byId(CLASSES);
+  CLASSES.forEach((c) => {
+    const st = LV[c.stage];
+    c.color = st.color; c.icon = st.icon; c.stageName = st.name;
+    c.name = c.name || "Class " + c.num;
+    c.range = c.range || c.name;
+  });
+  SKILLS.forEach((s) => { s.level = TP[s.topic].level; s.cls = TP[s.topic].cls; });
   TOPICS.forEach((t) => { t.skills = SKILLS.filter((s) => s.topic === t.id).map((s) => s.id); });
   const FORMULAS = TOPICS.flatMap((t) => t.formulas.map((f) => ({ ...f, topic: t })));
   const BRANCHES = [...new Set(TOPICS.map((t) => t.branch))];
@@ -203,11 +210,23 @@
   const back = (href, label) => `<a class="back" href="${href}">${icon("left")} ${esc(label)}</a>`;
 
   /* ---------- Views ---------- */
-  const myLevel = () => LV[store.get("cls")] || null;
+  /* The stored "cls" is now an individual class id (c1…c12, ug). Old saves
+     held a stage id, so fall back to that stage's first class. */
+  const myClass = () => { const v = store.get("cls"); return CL[v] || CLASSES.find((c) => c.stage === v) || null; };
+  const myLevel = () => { const c = myClass(); return c ? LV[c.stage] : null; };
+  const classStats = (c) => {
+    const ts = TOPICS.filter((t) => t.cls === c.id);
+    const d = ts.filter((t) => done.has(t.id)).length;
+    return { ts, d, pct: ts.length ? Math.round((d / ts.length) * 100) : 0 };
+  };
 
   function stageChips(active, href) {
     return `<div class="stage-chips" role="tablist" aria-label="Stage">${LEVELS.map((l, k) => `<a href="${href(l)}" role="tab" style="--c:${l.color}" aria-selected="${l === active}">
       <span class="lv-dot">${icon(l.icon)}</span><span><small>Stage ${k + 1}</small>${esc(l.range)}</span></a>`).join("")}</div>`;
+  }
+  function classChips(active, href) {
+    return `<div class="stage-chips class-chips" role="tablist" aria-label="Class">${CLASSES.map((c) => `<a href="${href(c)}" role="tab" style="--c:${c.color}" aria-selected="${c === active}">
+      <span class="lv-dot">${c.num == null ? icon(c.icon) : c.num}</span><span><small>${esc(c.stageName)}</small>${esc(c.name)}</span></a>`).join("")}</div>`;
   }
 
   const learnTabs = (on) => `<div class="seg wide tabs-seg" role="tablist" aria-label="Learn">
@@ -216,25 +235,25 @@
     <a href="#/rules" role="tab" aria-selected="${on === "rules"}">${icon("list")} Rules</a>
     <a href="#/glossary" role="tab" aria-selected="${on === "glossary"}">${icon("abc")} Glossary</a></div>`;
 
-  function learnView(l) {
-    l = l || myLevel() || LEVELS[0];
-    const i = LEVELS.indexOf(l);
-    const { ts, d, pct } = levelStats(l);
+  function learnView(c) {
+    c = c || myClass() || CLASSES[0];
+    const st = LV[c.stage];
+    const { ts, pct } = classStats(c);
     app.innerHTML = `
       <h1 class="page-title">Learn</h1>
       ${learnTabs("topics")}
-      ${stageChips(l, (x) => `#/learn/${x.id}`)}
-      <section class="stage-card" style="--c:${l.color}">
+      ${classChips(c, (x) => `#/learn/${x.id}`)}
+      <section class="stage-card" style="--c:${c.color}">
         <div class="stage-top">
-          <span class="lv-ic big">${icon(l.icon)}</span>
-          <div><small>Stage ${i + 1} · ${esc(l.range)}</small><h2>${esc(l.name)}</h2></div>
+          <span class="lv-ic big">${c.num == null ? icon(c.icon) : c.num}</span>
+          <div><small>${esc(st.name)}</small><h2>${esc(c.name)}</h2></div>
         </div>
-        <p>${esc(l.blurb)}</p>
-        ${progress(pct, l.name + " progress")}
-        <div class="stage-foot"><a class="btn sm" href="#/gallery">${icon("play")} Visual solutions</a><a class="btn sm" href="#/test?stage=${l.id}">${icon("clipboard")} Test this stage</a></div>
+        <p>${esc(st.blurb)}</p>
+        ${progress(pct, c.name + " progress")}
+        <div class="stage-foot"><a class="btn sm" href="#/gallery">${icon("play")} Visual solutions</a><a class="btn sm" href="#/test?cls=${c.id}">${icon("clipboard")} Test this class</a></div>
       </section>
-      <div class="topic-list">
-        ${ts.map((t, k) => `<a class="topic-card" href="#/topic/${t.id}" style="--c:${l.color}">
+      ${ts.length ? `<div class="topic-list">
+        ${ts.map((t, k) => `<a class="topic-card" href="#/topic/${t.id}" style="--c:${c.color}">
           <span class="tnum ${done.has(t.id) ? "is-done" : ""}">${done.has(t.id) ? icon("check") : String(k + 1).padStart(2, "0")}</span>
           <span class="tbody">
             <b>${esc(t.title)}</b>
@@ -243,18 +262,18 @@
           </span>
           ${icon("right")}
         </a>`).join("")}
-      </div>`;
-    return l.name;
+      </div>` : `<p class="muted small-p">No chapters mapped to ${esc(c.name)} yet.</p>`}`;
+    return c.name;
   }
   function topicView(t) {
-    const l = LV[t.level];
+    const l = LV[t.level], c = CL[t.cls];
     const idx = TOPICS.indexOf(t), prev = TOPICS[idx - 1], next = TOPICS[idx + 1];
     const tool = t.tool && TL[t.tool];
     store.set("last", t.id);
     app.innerHTML = `
-      ${back(`#/learn/${l.id}`, l.name)}
-      <header class="topic-head" style="--c:${l.color}">
-        <div class="chips"><span class="chip lv">${icon(l.icon)} ${esc(l.range)}</span><span class="chip">${esc(t.branch)}</span></div>
+      ${back(`#/learn/${c.id}`, c.name)}
+      <header class="topic-head" style="--c:${c.color}">
+        <div class="chips"><span class="chip lv">${c.num == null ? icon(c.icon) : icon(l.icon)} ${esc(c.name)}</span><span class="chip">${esc(t.branch)}</span></div>
         <h1>${esc(t.title)}</h1>
         <p class="lead">${rich(t.summary)}</p>
         ${tool ? `<div class="acts"><a class="btn sm" href="#/tools/${tool.id}">${icon(tool.icon)} Open the ${esc(tool.short.toLowerCase())} tool</a></div>` : ""}
@@ -1291,7 +1310,8 @@
     let section = a || "home", title;
     const q = window.MZQ && window.MZQ.route(a || "", b, new URLSearchParams(query));
     if (q) { title = q.title; section = q.section; }
-    else if (a === "learn" && b && LV[b]) { title = learnView(LV[b]); }
+    else if (a === "learn" && b && CL[b]) { title = learnView(CL[b]); }
+    else if (a === "learn" && b && LV[b]) { title = learnView(CLASSES.find((c) => c.stage === b)); }
     else if (a === "learn" && !b) title = learnView();
     else if (a === "topic" && TP[b]) { title = topicView(TP[b]); section = "learn"; }
     else if (a === "formulas") { title = formulasView(); section = "learn"; }
@@ -1327,8 +1347,8 @@
   });
 
   window.MZU = {
-    E, LEVELS, TOPICS, SKILLS, FORMULAS, TOOLS, LV, TP, SK, app, store, done,
-    esc, tex, rich, icon, progress, back, stageChips, myLevel, DAILY,
+    E, LEVELS, TOPICS, SKILLS, FORMULAS, TOOLS, LV, TP, SK, CLASSES, CL, app, store, done,
+    esc, tex, rich, icon, progress, back, stageChips, classChips, myLevel, myClass, classStats, DAILY,
     setTeardown(fn) { teardown = fn; },
     go(h) { if (location.hash === h || (!location.hash && h === "#/")) route(); else location.hash = h; },
   };
