@@ -1,0 +1,22 @@
+{
+  "id": "/mathszone/",
+  "name": "MathsZone — All of maths, from counting to calculus",
+  "short_name": "MathsZone",
+  "description": "Free maths practice for every student, Class 1 to college: daily challenges, speed rounds, chapter and mock tests, 80+ question types, animated visual solutions, formulas and tools.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "./?src=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#f7f7fb",
+  "theme_color": "#6d4aff",
+  "categories": ["education"],
+  "icons": [
+    { "src": "logo.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

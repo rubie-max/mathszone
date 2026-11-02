@@ -8,8 +8,15 @@
 <meta name="theme-color" content="#f7f7fb">
 <meta property="og:title" content="MathsZone · All of maths, from counting to calculus">
 <meta property="og:description" content="A Class 1 to college roadmap, formulas, tools and unlimited practice.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MathsZone">
+<meta name="application-name" content="MathsZone">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="logo.svg">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <script>
   (function () {
     var t;
@@ -21,15 +28,15 @@
 </script>
 <link rel="preload" href="fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=10">
+<link rel="stylesheet" href="styles.css?v=13">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
-<script defer src="engine.js?v=10"></script>
-<script defer src="data.js?v=10"></script>
-<script defer src="practice.js?v=10"></script>
-<script defer src="app.js?v=10"></script>
-<script defer src="viz.js?v=10"></script>
-<script defer src="board.js?v=10"></script>
-<script defer src="quiz.js?v=10"></script>
+<script defer src="engine.js?v=13"></script>
+<script defer src="data.js?v=13"></script>
+<script defer src="practice.js?v=13"></script>
+<script defer src="app.js?v=13"></script>
+<script defer src="viz.js?v=13"></script>
+<script defer src="board.js?v=13"></script>
+<script defer src="quiz.js?v=13"></script>
 </head>
 <body>
 <a class="skip" href="#app">Skip to content</a>
@@ -63,6 +70,18 @@
   </div>
 </footer>
 
+<div class="pwa-banner" id="pwaBanner" hidden role="region" aria-label="Install MathsZone">
+  <span class="pwa-ic" aria-hidden="true"><img src="icons/icon-192.png" alt="" width="42" height="42"></span>
+  <div class="pwa-txt">
+    <strong>Install MathsZone</strong>
+    <small id="pwaMsg">Add it to your home screen — opens full screen and works offline.</small>
+  </div>
+  <div class="pwa-act">
+    <button type="button" class="btn sm primary" id="pwaInstall">Install</button>
+    <button type="button" class="pwa-x" id="pwaClose" aria-label="Dismiss">✕</button>
+  </div>
+</div>
+
 <nav class="bottom-nav" aria-label="Sections">
   <a href="#/" data-route="home"><span data-icon="home"></span>Home</a>
   <a href="#/practice" data-route="practice"><span data-icon="target"></span>Practice</a>
@@ -70,5 +89,65 @@
   <a href="#/tools" data-route="tools"><span data-icon="tools"></span>Tools</a>
   <a href="#/me" data-route="me"><span data-icon="user"></span>Me</a>
 </nav>
+
+<script>
+(function () {
+  "use strict";
+  var banner = document.getElementById("pwaBanner"),
+    installBtn = document.getElementById("pwaInstall"),
+    closeBtn = document.getElementById("pwaClose"),
+    msg = document.getElementById("pwaMsg"),
+    deferred = null,
+    DISMISS = "mz-pwa-dismissed";
+
+  function standalone() {
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  }
+  function dismissed() {
+    try { return localStorage.getItem(DISMISS) === "1"; } catch (e) { return false; }
+  }
+  function hide() { if (banner) banner.hidden = true; }
+  function show() { if (banner && !standalone() && !dismissed()) banner.hidden = false; }
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    deferred = e;
+    if (installBtn) installBtn.hidden = false;
+    show();
+  });
+
+  if (installBtn) installBtn.addEventListener("click", function () {
+    if (!deferred) return;
+    deferred.prompt();
+    var done = function () { deferred = null; hide(); };
+    if (deferred.userChoice && deferred.userChoice.finally) deferred.userChoice.finally(done);
+    else done();
+  });
+
+  if (closeBtn) closeBtn.addEventListener("click", function () {
+    try { localStorage.setItem(DISMISS, "1"); } catch (e) {}
+    hide();
+  });
+
+  window.addEventListener("appinstalled", function () {
+    try { localStorage.removeItem(DISMISS); } catch (e) {}
+    hide();
+  });
+
+  // iOS Safari never fires beforeinstallprompt — guide the manual route instead.
+  var ua = navigator.userAgent || "";
+  if (/iphone|ipad|ipod/i.test(ua) && /safari/i.test(ua) && !/crios|fxios|android/i.test(ua) && !standalone() && !dismissed()) {
+    if (installBtn) installBtn.hidden = true;
+    if (msg) msg.textContent = "Tap the Share button, then \u201CAdd to Home Screen\u201D.";
+    show();
+  }
+})();
+</script>
 </body>
 </html>
