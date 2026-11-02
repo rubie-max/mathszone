@@ -1,19 +1,11 @@
 /* MathsZone service worker.
-   Shell is precached for offline + installability; everything else (versioned JS/CSS,
-   fonts, KaTeX from the CDN) is cached at runtime, so bumping ?v= never desyncs the SW. */
-const VERSION = "mz-2026-11-02c";
+   Network-first for same-origin requests so the live site always wins when online
+   (no stale manifest/icons/JS during active development); cache is only a fallback
+   for offline. The manifest and the SW itself are never served from cache. */
+const VERSION = "mz-2026-11-02d";
 const SHELL = "mz-shell-" + VERSION;
-const RUNTIME = "mz-runtime-" + VERSION;
 
-const SHELL_URLS = [
-  "./",
-  "./index.html",
-  "./manifest.webmanifest",
-  "./logo.svg",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/icon-maskable-512.png",
-];
+const SHELL_URLS = ["./", "./index.html"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -29,13 +21,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((k) => k !== SHELL && k !== RUNTIME)
-            .map((k) => caches.delete(k))
-        )
-      )
+      .then((keys) => Promise.all(keys.filter((k) => k !== SHELL).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -49,36 +35,46 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
-  const isHttp = url.protocol === "http:" || url.protocol === "https:";
-  if (!isHttp) return;
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
 
-  // Navigations: network-first so updates land, falling back to the cached shell offline.
-  if (req.mode === "navigate") {
+  const sameOrigin = url.origin === self.location.origin;
+
+  // Manifest and the service worker file: always fresh from the network, never cached.
+  if (sameOrigin && (url.pathname.endsWith("manifest.webmanifest") || url.pathname.endsWith("sw.js"))) {
+    event.respondWith(fetch(req, { cache: "no-store" }).catch(() => caches.match(req)));
+    return;
+  }
+
+  // Same-origin (incl. navigations): network-first, cache only as an offline fallback.
+  if (sameOrigin) {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(SHELL).then((c) => c.put("./index.html", copy)).catch(() => {});
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(SHELL).then((c) => c.put(req, copy)).catch(() => {});
+          }
           return res;
         })
-        .catch(() => caches.match("./index.html").then((r) => r || caches.match("./")))
+        .catch(() =>
+          caches.match(req).then((r) => r || (req.mode === "navigate" ? caches.match("./index.html") : undefined))
+        )
     );
     return;
   }
 
-  // Everything else: stale-while-revalidate.
+  // Cross-origin (KaTeX, CDN fonts): stable + versioned, so cache-first is fine.
   event.respondWith(
-    caches.match(req).then((cached) => {
-      const network = fetch(req)
-        .then((res) => {
+    caches.match(req).then(
+      (cached) =>
+        cached ||
+        fetch(req).then((res) => {
           if (res && (res.ok || res.type === "opaque")) {
             const copy = res.clone();
-            caches.open(RUNTIME).then((c) => c.put(req, copy)).catch(() => {});
+            caches.open(SHELL).then((c) => c.put(req, copy)).catch(() => {});
           }
           return res;
         })
-        .catch(() => cached);
-      return cached || network;
-    })
+    )
   );
 });
