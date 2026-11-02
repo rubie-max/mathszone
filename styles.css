@@ -1395,9 +1395,9 @@ body.wb-open { overflow: hidden; }
   letter-spacing: .04em; text-transform: uppercase; color: var(--accent-ink); background: var(--accent);
 }
 .wb-q-body { font-size: 16px; font-weight: 650; line-height: 1.5; color: var(--ink); }
-.wb-surf { flex: 1; min-height: 0; overflow: auto; background: var(--surface-2); -webkit-overflow-scrolling: touch; }
+.wb-surf { flex: 1; min-height: 0; overflow: auto; background: var(--surface-2); -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 .wb-paper {
-  position: relative; width: 100%; margin: 0 auto; background-color: #fdfdfb;
+  position: relative; width: 100%; margin: 0; background-color: #fdfdfb;
   background-image: linear-gradient(#e3e6ef 1px, transparent 1px), linear-gradient(90deg, #e3e6ef 1px, transparent 1px);
   background-size: 28px 28px; background-position: -1px -1px;
 }

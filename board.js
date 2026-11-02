@@ -18,7 +18,7 @@
   const SIZE_NAMES = ["Thin", "Medium", "Thick"];
 
   let root = null, surf = null, paper = null, canvas = null, qBand = null, barEl = null;
-  let vctx = null, base = null, cssW = 0, paperH = 0, dpr = 1;
+  let vctx = null, base = null, paperW = 0, paperH = 0, dpr = 1;
   let strokes = [], redo = [], cur = null, drawing = false, ptId = null;
   let tool = "pen", color = COLORS[0].v, sizeIx = 1, open = false, grew = false;
 
@@ -117,33 +117,48 @@
   function sizeSurface() {
     if (!open) return;
     const r = surf.getBoundingClientRect();
-    const w = Math.max(280, Math.round(r.width));
-    const minH = Math.max(Math.round(r.height), 1);
-    if (!grew || paperH < minH) paperH = Math.max(paperH, minH);
-    if (w !== cssW || canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(paperH * dpr)) {
-      cssW = w;
-      resizeCanvas(cssW, paperH);
+    const vw = Math.max(280, Math.round(r.width));
+    const vh = Math.max(200, Math.round(r.height));
+    // The board is a roaming canvas, wider and taller than the screen so you can
+    // pan left/right and up/down. It only ever grows, never shrinks below the view.
+    if (!grew) { paperW = Math.round(vw * 1.6); paperH = Math.round(vh * 1.6); }
+    else { paperW = Math.max(paperW, vw); paperH = Math.max(paperH, vh); }
+    if (canvas.style.width !== paperW + "px" || canvas.style.height !== paperH + "px" || dpr !== cappedDpr()) {
+      resizeCanvas(paperW, paperH);
     }
   }
 
+  const cappedDpr = () => Math.min(window.devicePixelRatio || 1, 2.5);
+
   function resizeCanvas(w, h) {
-    dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    dpr = cappedDpr();
     for (const cv of [canvas, base]) {
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
     }
     canvas.style.width = base.style.width = w + "px";
     canvas.style.height = base.style.height = h + "px";
+    paper.style.width = w + "px";
     paper.style.height = h + "px";
     for (const g of [vctx, base.getContext("2d")]) { g.setTransform(1, 0, 0, 1, 0, 0); g.scale(dpr, dpr); }
     rebuild();
   }
 
   function addSpace(manual) {
-    paperH += Math.round(surf.getBoundingClientRect().height * 0.8) || 500;
+    const r = surf.getBoundingClientRect();
+    paperW += Math.round(r.width * 0.8) || 400;
+    paperH += Math.round(r.height * 0.8) || 400;
     grew = true;
-    resizeCanvas(cssW, paperH);
-    if (manual) surf.scrollTo({ top: surf.scrollHeight, behavior: "smooth" });
+    resizeCanvas(paperW, paperH);
+    if (manual) surf.scrollTo({ left: surf.scrollWidth, top: surf.scrollHeight, behavior: "smooth" });
+  }
+
+  // Grow the canvas when a stroke reaches an edge, so you never run out of room.
+  function ensureRoom(x, y) {
+    let g = false;
+    if (x > paperW - 90) { paperW += 420; g = true; }
+    if (y > paperH - 90) { paperH += 420; g = true; }
+    if (g) { grew = true; resizeCanvas(paperW, paperH); }
   }
 
   // ---- drawing ----
@@ -189,7 +204,7 @@
 
   function paint() {
     vctx.clearRect(0, 0, canvas.width, canvas.height);
-    vctx.drawImage(base, 0, 0, cssW, paperH);
+    vctx.drawImage(base, 0, 0, paperW, paperH);
     if (cur) stroke(vctx, cur);
   }
 
@@ -209,7 +224,7 @@
     const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
     for (const ev of evs.length ? evs : [e]) cur.pts.push(pt(ev));
     const last = cur.pts[cur.pts.length - 1];
-    if (last[1] > paperH - 80) addSpace(false);
+    ensureRoom(last[0], last[1]);
     paint();
   }
 
@@ -254,7 +269,7 @@
   function onResize() {
     if (!open) return;
     grew = false;
-    paperH = 0;
+    paperW = paperH = 0;
     sizeSurface();
   }
 
@@ -276,8 +291,8 @@
     redo = [];
     cur = null;
     grew = false;
-    paperH = 0;
-    if (open) { sizeSurface(); syncHistory(); }
+    paperW = paperH = 0;
+    if (open) { sizeSurface(); syncHistory(); surf.scrollTo(0, 0); }
   }
 
   function show() {
@@ -287,7 +302,7 @@
     root.hidden = false;
     document.body.classList.add("wb-open");
     applyTool();
-    requestAnimationFrame(() => { paperH = 0; grew = false; sizeSurface(); syncHistory(); });
+    requestAnimationFrame(() => { paperW = paperH = 0; grew = false; sizeSurface(); syncHistory(); });
   }
 
   function hide() {
