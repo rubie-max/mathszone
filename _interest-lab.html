@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interest — pen &amp; paper layouts</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --surface: #ffffff; --surface-2: #f4f3fa; --ink: #15132b; --muted: #6a6884;
+    --line: #e6e4f0; --accent: #6d4aff; --i: #10b981; --x: #f59e0b;
+    --shadow: 0 1px 2px rgba(21,19,43,.04), 0 10px 26px -14px rgba(21,19,43,.22);
+    --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f7f7fb; color: var(--ink); font: 15px/1.5 var(--sans); padding: 20px 14px 70px; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 460px; margin: 0 auto; display: grid; gap: 20px; }
+  .head h1 { font-size: 21px; margin: 0 0 6px; }
+  .head p { color: var(--muted); font-size: 13.5px; margin: 0; line-height: 1.5; }
+  .opt { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; box-shadow: var(--shadow); }
+  .opt-h { display: flex; align-items: baseline; gap: 8px; margin: 0 0 3px; }
+  .opt-h b { font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
+  .opt-h span { font-size: 16px; font-weight: 800; }
+  .opt-note { color: var(--muted); font-size: 12.5px; margin: 0 0 14px; line-height: 1.45; }
+
+  .katex { font-size: 1.04em; }
+  .katex-display { margin: 0; text-align: left; }
+  .katex-display > .katex { text-align: left; }
+
+  /* year blocks (Option 2) */
+  .yb { padding: 9px 0; border-bottom: 1px dashed var(--line); }
+  .yb:last-child { border-bottom: 0; }
+  .yb .ylab { font-size: 12px; font-weight: 800; color: var(--accent); margin-bottom: 5px; }
+  .yb .wl { margin: 3px 0; }
+  .carry { color: var(--i); font-weight: 700; font-size: 12px; margin-top: 3px; }
+  .finale { margin-top: 12px; padding-top: 11px; border-top: 2px solid var(--line); }
+
+  /* notebook (Option 4) */
+  .note { position: relative; border-radius: 12px; padding: 14px 14px 14px 40px; color: #1b2a4a;
+    background-color: #fffdf5;
+    background-image: linear-gradient(#e7ead0 1px, transparent 1px);
+    background-size: 100% 30px; background-position: 0 10px; }
+  .note::before { content: ""; position: absolute; top: 0; bottom: 0; left: 26px; width: 2px; background: #f3a3a3; }
+  .note .nl { font-family: "Caveat", cursive; font-size: 24px; line-height: 30px; font-weight: 600; }
+  .note .nl.step { color: #2b3a6a; }
+  .note .nl.ans { color: #0f9f6e; font-weight: 700; }
+
+  /* annotated (Option 5) */
+  .ann { display: grid; gap: 10px; }
+  .arow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
+  .arow .note-tag { font-size: 11.5px; color: var(--muted); background: var(--surface-2); padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>Interest — the pen &amp; paper way</h1>
+    <p>How you'd actually work it out by hand: write the rule, put the numbers in, simplify line by line. Example: <b>₹10,000 at 10% for 3 years</b>. Pick the style you like and I'll animate it step by step for both SI and CI.</p>
+  </div>
+
+  <section class="opt">
+    <div class="opt-h"><b>Option 1</b><span>Simple interest — worked down</span></div>
+    <p class="opt-note">Formula first, then substitute, then simplify — each line under the last, lined up at the equals sign.</p>
+    <div class="ktxd" data-tex="\begin{aligned} SI &= \frac{P \times R \times T}{100} \\[2pt] &= \frac{10000 \times 10 \times 3}{100} \\[2pt] &= \frac{300000}{100} \\[2pt] &= 3000 \end{aligned}"></div>
+  </section>
+
+  <section class="opt">
+    <div class="opt-h"><b>Option 2</b><span>Compound interest — year by year</span></div>
+    <p class="opt-note">The way it's really done by hand: find each year's interest, add it on, carry the new amount into the next year.</p>
+    <div class="yb"><div class="ylab">YEAR 1</div>
+      <div class="wl ktx" data-tex="\text{Interest} = 10000 \times \tfrac{10}{100} = 1000"></div>
+      <div class="wl ktx" data-tex="\text{Amount} = 10000 + 1000 = 11000"></div>
+    </div>
+    <div class="yb"><div class="ylab">YEAR 2</div>
+      <div class="wl ktx" data-tex="\text{Interest} = 11000 \times \tfrac{10}{100} = 1100"></div>
+      <div class="wl ktx" data-tex="\text{Amount} = 11000 + 1100 = 12100"></div>
+    </div>
+    <div class="yb"><div class="ylab">YEAR 3</div>
+      <div class="wl ktx" data-tex="\text{Interest} = 12100 \times \tfrac{10}{100} = 1210"></div>
+      <div class="wl ktx" data-tex="\text{Amount} = 12100 + 1210 = 13310"></div>
+    </div>
+    <div class="finale wl ktx" data-tex="CI = 13310 - 10000 = \textcolor{#10b981}{3310}"></div>
+  </section>
+
+  <section class="opt">
+    <div class="opt-h"><b>Option 3</b><span>Compound interest — formula</span></div>
+    <p class="opt-note">The shortcut formula, substituted and simplified down to the amount, then subtract the principal.</p>
+    <div class="ktxd" data-tex="\begin{aligned} A &= P\left(1+\frac{R}{100}\right)^{T} \\[2pt] &= 10000\left(1+\frac{10}{100}\right)^{3} \\[2pt] &= 10000\left(\frac{11}{10}\right)^{3} \\[2pt] &= 10000 \times \frac{1331}{1000} = 13310 \end{aligned}"></div>
+    <div class="finale wl ktx" data-tex="CI = A - P = 13310 - 10000 = \textcolor{#10b981}{3310}"></div>
+  </section>
+
+  <section class="opt">
+    <div class="opt-h"><b>Option 4</b><span>Notebook (handwritten)</span></div>
+    <p class="opt-note">Literally like writing it in a ruled notebook — pen font, red margin, the working flowing down the page.</p>
+    <div class="note">
+      <div class="nl">P = 10000, R = 10%, T = 3 yrs</div>
+      <div class="nl step">Yr 1: I = 10000 × 10/100 = 1000</div>
+      <div class="nl step">→ Amount = 11000</div>
+      <div class="nl step">Yr 2: I = 11000 × 10/100 = 1100</div>
+      <div class="nl step">→ Amount = 12100</div>
+      <div class="nl step">Yr 3: I = 12100 × 10/100 = 1210</div>
+      <div class="nl step">→ Amount = 13310</div>
+      <div class="nl ans">CI = 13310 − 10000 = 3310 ✓</div>
+    </div>
+  </section>
+
+  <section class="opt">
+    <div class="opt-h"><b>Option 5</b><span>Worked + margin notes</span></div>
+    <p class="opt-note">The same working, but each line has a short note on the right saying what you just did and why.</p>
+    <div class="ann">
+      <div class="arow"><span class="ktx" data-tex="\text{Yr 1: } 10000 \times \tfrac{10}{100} = 1000"></span><span class="note-tag">10% of the start</span></div>
+      <div class="arow"><span class="ktx" data-tex="10000 + 1000 = 11000"></span><span class="note-tag">add it on</span></div>
+      <div class="arow"><span class="ktx" data-tex="\text{Yr 2: } 11000 \times \tfrac{10}{100} = 1100"></span><span class="note-tag">10% of the new amount</span></div>
+      <div class="arow"><span class="ktx" data-tex="11000 + 1100 = 12100"></span><span class="note-tag">bigger base ⇒ bigger interest</span></div>
+      <div class="arow"><span class="ktx" data-tex="\text{Yr 3: } 12100 \times \tfrac{10}{100} = 1210"></span><span class="note-tag">10% again</span></div>
+      <div class="arow"><span class="ktx" data-tex="12100 + 1210 = 13310"></span><span class="note-tag">final amount</span></div>
+      <div class="finale arow"><span class="ktx" data-tex="CI = 13310 - 10000 = \textcolor{#10b981}{3310}"></span><span class="note-tag">amount − principal</span></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  function render() {
+    if (!window.katex) { setTimeout(render, 60); return; }
+    document.querySelectorAll(".ktx").forEach(function (el) {
+      try { katex.render(el.dataset.tex, el, { throwOnError: false }); } catch (e) {}
+    });
+    document.querySelectorAll(".ktxd").forEach(function (el) {
+      try { katex.render(el.dataset.tex, el, { throwOnError: false, displayMode: true }); } catch (e) {}
+    });
+  }
+  render();
+</script>
+</body>
+</html>

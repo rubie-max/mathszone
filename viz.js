@@ -258,36 +258,124 @@
     return R(S, h);
   };
 
-  B.array = ({ a, b }) => {
+  function longMulViz(a, b, opts = {}) {
     const S = Scene();
-    let h = "";
-    for (let i = 0; i < b; i++) {
-      const k = S.step(i === 0 ? `$${a} \\times ${b}$ means ${b} rows of ${a}. One row: ${a}.` : `${i + 1} rows: $${a * i} + ${a} = ${a * (i + 1)}$.`);
-      h += `<div class="ar-row"${A(k)}><span class="ar-dots">${"<i></i>".repeat(a)}</span><b class="ar-n"${A(k, { h: i === b - 1 ? k + 1 : null })}>${a * (i + 1)}</b></div>`;
+    const dpA = opts.dpA || 0, dpB = opts.dpB || 0, dp = dpA + dpB;
+    const showA = dpA ? a / 10 ** dpA : a, showB = dpB ? b / 10 ** dpB : b;
+    const product = a * b, showP = dp ? +(product / 10 ** dp).toFixed(dp) : product;
+    const shown = (x) => (Number.isInteger(x) ? String(x) : E().fmt(x));
+    const places = ["ones", "tens", "hundreds", "thousands"];
+    let top = a, bot = b;
+    if (String(b).length > String(a).length) { top = b; bot = a; }
+    const w = Math.max(String(top).length, String(bot).length, String(product).length);
+    const ncols = w + 1;
+    const blank = () => cel("", null, "sd-sp");
+    const put = (c) => (c ? cel(c.v, c.k, c.cls || "big", c.o) : blank());
+    const fromRight = (n, k, cls) => {
+      const row = Array(ncols).fill(null), s = String(n);
+      for (let i = 0; i < s.length; i++) row[ncols - s.length + i] = { v: s[i], k, cls };
+      return row;
+    };
+    if (dp) S.step(`Ignore the decimal points: treat $${shown(showA)} \\times ${shown(showB)}$ as $${a} \\times ${b}$.`);
+    else S.step(`Write ${top} and ${bot} in columns. Multiply from the ones.`);
+    const botLen = String(bot).length, rows = [];
+    let kF;
+    if (botLen === 1 && String(top).length === 1) {
+      const kP = S.step(`$${bot} \\times ${top} = ${product}$. Write ${product} underneath.`);
+      kF = S.step(dp ? `${dpA} + ${dpB} = ${dp} decimal places, so ${product} becomes ${shown(showP)}.` : `So $${top} \\times ${bot} = ${product}$.`);
+      const botR = fromRight(bot, 0, "big ul");
+      botR[0] = { v: "×", k: 0, cls: "big op" };
+      rows.push(fromRight(top, 0, "big"), botR, fromRight(product, kP, "big k1"));
+    } else if (botLen === 1) {
+      const d = bot, topS = String(top);
+      let carry = 0;
+      const carryRow = Array(ncols).fill(null), prodRow = Array(ncols).fill(null);
+      for (let i = 0; i < topS.length || carry; i++) {
+        const da = i < topS.length ? +topS[topS.length - 1 - i] : 0, t = da * d + carry, write = t % 10, next = Math.floor(t / 10);
+        const k = S.step(i < topS.length
+          ? `$${d} \\times ${da}${carry ? ` + ${carry}` : ""} = ${t}$.${t >= 10 ? ` Write ${write} and carry ${next}.` : ` Write ${write} underneath.`}`
+          : `Write the carried ${carry}.`);
+        prodRow[ncols - 1 - i] = { v: write, k, cls: "big k1" };
+        if (next && ncols - 2 - i > 0) carryRow[ncols - 2 - i] = { v: next, k, cls: "carry" };
+        carry = next;
+      }
+      kF = S.step(dp ? `The whole-number product is ${product}. ${dp} decimal places: ${shown(showP)}.` : `So $${top} \\times ${bot} = ${product}$.`);
+      const botR = fromRight(bot, 0, "big ul");
+      botR[0] = { v: "×", k: 0, cls: "big op" };
+      if (carryRow.some(Boolean)) rows.push(carryRow);
+      rows.push(fromRight(top, 0, "big"), botR, prodRow);
+    } else {
+      const partials = [];
+      for (let p = 0; p < botLen; p++) {
+        const d = Math.floor(bot / 10 ** p) % 10;
+        if (!d) { S.step(`The ${places[p]} digit of ${bot} is 0, so that row is 0.`); continue; }
+        const raw = top * d, val = raw * 10 ** p;
+        const k = S.step(p === 0
+          ? `Ones of ${bot}: $${top} \\times ${d} = ${raw}$. Write ${raw} underneath.`
+          : `${cap(places[p])} of ${bot}: $${top} \\times ${d} = ${raw}$, then a 0 in the ones (it is really ${val}).`);
+        partials.push({ val, k });
+      }
+      const kAdd = partials.length > 1 ? S.step(`Add the rows: $${partials.map((p) => p.val).join(" + ")} = ${product}$.`) : partials[0].k;
+      kF = S.step(dp ? `${dp} decimal places, so ${product} becomes ${shown(showP)}.` : `So $${top} \\times ${bot} = ${product}$.`);
+      const botR = fromRight(bot, 0, "big ul");
+      botR[0] = { v: "×", k: 0, cls: "big op" };
+      rows.push(fromRight(top, 0, "big"), botR);
+      partials.forEach((p, i) => {
+        const last = i === partials.length - 1, r = fromRight(p.val, p.k, last && partials.length > 1 ? "big ul" : "big");
+        if (i === 1) r[0] = { v: "+", k: p.k, cls: "big op" };
+        rows.push(r);
+      });
+      if (partials.length > 1) rows.push(fromRight(product, kAdd, "big k1"));
+      else rows[rows.length - 1] = fromRight(partials[0].val, partials[0].k, "big k1");
     }
-    S.step(`${b} rows of ${a} make ${a * b}, so $${a} \\times ${b} = ${a * b}$.`);
-    return R(S, `<div class="arr">${h}</div>`);
-  };
+    let h = "";
+    rows.forEach((row) => { for (let i = 0; i < ncols; i++) h += put(row[i]); });
+    return R(S, grid(`repeat(${ncols}, auto)`, h, "colm lmul") + (dp ? eq(`${shown(showA)} × ${shown(showB)} = <b>${shown(showP)}</b>`, kF, "k1") : ""));
+  }
+
+  B.array = ({ a, b }) => longMulViz(a, b);
 
   B.shortdiv = ({ a, b }) => {
-    const S = Scene(), ds = String(a).split("").map(Number), q = a / b;
-    S.step(`Set it out as a bus stop: ${b} outside, ${a} inside. Work from the left.`);
+    const S = Scene(), ds = String(a).split("").map(Number), q = a / b, n = ds.length, cols = n + 2;
+    const qCell = Array(n).fill(null), extra = [];
+    S.step(`Set it out as long division: ${b} outside, ${IN(a)} inside. Work from the left.`);
     let rem = 0, started = false;
-    const top = [], carry = [];
     ds.forEach((d, j) => {
-      const cur = rem * 10 + d, qd = Math.floor(cur / b), nr = cur % b;
-      let c;
-      if (!qd && !started) c = `${b} doesn't go into ${cur}, so carry the ${cur} to the next digit.`;
-      else { c = `${b} goes into ${cur} ${qd} time${qd === 1 ? "" : "s"}${nr ? `, remainder ${nr}. Carry the ${nr}.` : " exactly."}`; started = true; }
-      const k = S.step(c);
-      top[j] = qd || started ? { v: qd, k } : null;
-      if (nr && j + 1 < ds.length) carry[j + 1] = { v: nr, k };
+      const cur = rem * 10 + d, qd = Math.floor(cur / b), prod = qd * b, nr = cur - prod;
+      if (!qd && !started) {
+        S.step(j + 1 < n ? `${b} doesn't go into ${cur}, so look at the next digit too.` : `${b} doesn't go into ${cur}.`);
+        rem = cur;
+        return;
+      }
+      const kQ = S.step(`${b} goes into ${cur} ${qd} time${qd === 1 ? "" : "s"}. Write ${qd} on top.`);
+      qCell[j] = { v: qd, k: kQ };
+      started = true;
+      const kP = S.step(`$${b} \\times ${qd} = ${prod}$. Write ${prod} under ${cur}.`);
+      const kS = S.step(`Subtract: $${cur} - ${prod} = ${nr}$.`);
+      const pds = String(prod).split(""), end = j + 1, p0 = end - pds.length + 1;
+      const prodRow = Array(cols).fill(null);
+      prodRow[Math.max(0, p0 - 1)] = { v: "−", k: kP, cls: "big op" };
+      pds.forEach((ch, i) => { prodRow[p0 + i] = { v: ch, k: kP, cls: "big ul" }; });
+      prodRow[cols - 1] = { v: `${b}×${qd}`, k: kP, cls: "sd-mul" };
+      extra.push(prodRow);
+      const remRow = Array(cols).fill(null);
+      const rds = String(nr).split("");
+      rds.forEach((ch, i) => { remRow[end - rds.length + 1 + i] = { v: ch, k: kS, cls: "big k1" }; });
+      if (j + 1 < n) {
+        const next = nr * 10 + ds[j + 1];
+        const kB = S.step(`Bring down the ${ds[j + 1]}. Now we have ${next}.`);
+        remRow[j + 2] = { v: ds[j + 1], k: kB, cls: "big k2" };
+      }
+      extra.push(remRow);
       rem = nr;
     });
     const kF = S.step(`So $${a} \\div ${b} = ${q}$. Check: $${b} \\times ${q} = ${a}$.`);
-    let h = cel("", null, "") + ds.map((_, j) => (top[j] ? cel(top[j].v, top[j].k, "big k1", { h: kF }) : cel("", null, "big"))).join("");
-    h += cel(b, 0, "big sd-div") + ds.map((d, j) => `<div class="vc big sd-in"${A(0)}>${carry[j] ? `<sup${A(carry[j].k)}>${carry[j].v}</sup>` : ""}${d}</div>`).join("");
-    return R(S, grid(`repeat(${ds.length + 1}, auto)`, h, "sdiv"));
+    const blank = () => cel("", null, "sd-sp");
+    const put = (c) => (c ? cel(c.v, c.k, c.cls, c.o) : blank());
+    let h = blank() + ds.map((_, j) => (qCell[j] ? cel(qCell[j].v, qCell[j].k, "big k1") : blank())).join("") + blank();
+    h += cel(b, 0, "big sd-div") + ds.map((d) => cel(d, 0, "big sd-in")).join("") + blank();
+    extra.forEach((row) => { row.forEach((c) => { h += put(c); }); });
+    return R(S, grid(`repeat(${cols}, auto)`, h, "sdiv ldiv"));
   };
 
   const ftex = (n, d) => tx(d === 1 ? `${n}` : `\\dfrac{${n}}{${d}}`);
@@ -1168,11 +1256,7 @@
     return R(S, grid("auto auto auto", h, "tmap") + eq(tx(final[0]), kF, "k1"));
   }
 
-  B.decmul = ({ a, b }) => chainOf([
-    [`${hc(0, a)} \\times ${hc(1, b)} = ${a * b}`, `Ignore the decimal points and multiply the whole numbers.`],
-    [`${a / 10} \\to 1 \\text{ place},\\quad 0.${b} \\to 1 \\text{ place}`, `Count the decimal places: $1 + 1 = 2$.`],
-    [`${a * b} \\to ${hc(2, ((a * b) / 100).toFixed(2))}`, `Put 2 decimal places into ${a * b}.`],
-  ], [`${a / 10} \\times 0.${b}`, `Multiply the decimals.`]);
+  B.decmul = ({ a, b }) => longMulViz(a, b, { dpA: 1, dpB: 1 });
 
   B.sdtconv = ({ s }) => chainOf([
     [`1\\text{ km/h} = \\frac{1000\\text{ m}}{3600\\text{ s}} = ${hc(0, "\\frac{5}{18}")}\\text{ m/s}`, `1 km is 1000 m and 1 hour is 3600 seconds.`],

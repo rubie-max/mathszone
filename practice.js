@@ -150,7 +150,7 @@
 
   add("tables", "mult-div", "Times tables", () => {
     const a = ri(2, 12), b = ri(2, 12);
-    return { viz: { t: "array", a, b }, q: M(`${a} \\times ${b}`), ans: [a * b], show: M(a * b), wrong: [a * (b + 1), a * (b - 1), (a + 1) * b, a + b], how: [`$${a} \\times ${b}$ means ${b} lots of ${a}.`, `Count up in ${a}s: ${Array.from({ length: b }, (_, i) => a * (i + 1)).join(", ")}.`, `The ${ord(b)} number is ${a * b}, so $${a} \\times ${b} = ${a * b}$.`] };
+    return { viz: { t: "array", a, b }, q: M(`${a} \\times ${b}`), ans: [a * b], show: M(a * b), wrong: [a * (b + 1), a * (b - 1), (a + 1) * b, a + b], how: [`Write ${a} and ${b} in columns and multiply from the ones.`, `$${a} \\times ${b} = ${a * b}$.`] };
   }, true);
 
   add("divide", "mult-div", "Division", () => {

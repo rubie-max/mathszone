@@ -1155,6 +1155,7 @@ body.playing .top, body.playing .bottom-nav, body.playing .foot { display: none;
 .pv .vc.vh { background: var(--surface-2); }
 .pv .vc:empty { border: 0; }
 .colm .vc { min-width: 26px; }
+.colm.lmul { gap: 0 2px; }
 .ladder { gap: 0; }
 .ladder .vc { border-radius: 0; }
 .lad-p { padding-right: 10px; text-align: right; font-size: 18px; font-weight: 800; color: var(--vk1); }
@@ -1162,9 +1163,12 @@ body.playing .top, body.playing .bottom-nav, body.playing .foot { display: none;
 .lad-n.cutl { border-left: 2.5px solid var(--ink); }
 .sdiv { gap: 0; }
 .sdiv .vc { border-radius: 0; }
+.sdiv.ldiv { row-gap: 2px; }
 .sd-div { border-right: 2.5px solid var(--ink); }
 .sd-in { position: relative; border-top: 2.5px solid var(--ink); }
 .sd-in sup { position: absolute; left: 1px; top: 1px; font-size: 11px; font-weight: 800; color: var(--vk2); }
+.sdiv .sd-sp { min-width: 28px; padding: 4px 6px; }
+.sdiv .sd-mul { min-width: 0; padding: 0 2px 0 14px; font-size: 13px; font-weight: 800; color: var(--vk2); letter-spacing: 0.03em; justify-self: start; }
 .tbl { gap: 0; width: min(100%, 420px); }
 .tbl .vc { border-bottom: 1px solid var(--line); border-radius: 0; }
 .tbl .vc.vh { background: var(--surface-2); }
